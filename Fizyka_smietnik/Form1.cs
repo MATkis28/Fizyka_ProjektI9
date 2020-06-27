@@ -122,6 +122,7 @@ namespace Fizyka_smietnik
 
         public void physics()
         {
+            //tak
             long PhysicsTicks = 0;
             long NextTick = 0;
             Stopwatch PhysicsTimer = new Stopwatch();
