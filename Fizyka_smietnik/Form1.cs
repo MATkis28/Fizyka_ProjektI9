@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
+using System.Runtime.CompilerServices;
 
 namespace Fizyka_smietnik
 {
@@ -27,6 +28,10 @@ namespace Fizyka_smietnik
 
         public long physicsFPS = 0;
         public long drawFPS = 0;
+
+        public long ticktime = Stopwatch.Frequency / 60;
+
+        Size box = new Size(574, 384);
 
         Font drawFont = new Font("Arial", 8);
 
@@ -118,9 +123,11 @@ namespace Fizyka_smietnik
         public void physics()
         {
             long PhysicsTicks = 0;
+            long NextTick = 0;
             Stopwatch PhysicsTimer = new Stopwatch();
 
             PhysicsTimer.Start();
+            NextTick = PhysicsTimer.ElapsedTicks+ticktime;
             while (physicsRuning)
             {
                 if (particles != null)
@@ -149,7 +156,7 @@ namespace Fizyka_smietnik
         {
             Random rng = new Random(); //UTWORZENIE SEEDA RNG
 
-
+            pictureBox1.Size=box;
             if (physicsThread != null)
             {
                 physicsThread.Abort();
@@ -168,7 +175,7 @@ namespace Fizyka_smietnik
 
             particles = new Particle[numberofparticles];
             for (int i = 0; i < numberofparticles; i++)
-                particles[i] = new Particle(10, pictureBox1.Width , pictureBox1.Height, maxvel , rng);
+                particles[i] = new Particle(10, box.Width , pictureBox1.Height, maxvel , rng);
 
                 //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
 
@@ -229,6 +236,7 @@ namespace Fizyka_smietnik
     {
 
         geometry geomath = new geometry();
+
         public double X;
         public double Y;
         public int Radius;
@@ -245,9 +253,8 @@ namespace Fizyka_smietnik
             velY = vely;
         }
 
-        public Particle(int radius, int width, int height, int maxvel, Random rng)          //LOSOWE UTWORZENIE czastki
+        public Particle( int radius, int width, int height, int maxvel, Random rng)          //LOSOWE UTWORZENIE czastki
         {
-            
             Radius = radius;
             X = 10 + rng.Next() % (width - radius - 1);
             Y = 10 + rng.Next() % (height - radius - 1);
@@ -276,6 +283,7 @@ namespace Fizyka_smietnik
             multipleparticlescollisions(particles);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool particlecollision(Particle secondparticle)
         {
             if (secondparticle != this)
@@ -307,22 +315,20 @@ namespace Fizyka_smietnik
         {
             bool touched = false;
             for (int i = 0; i<particles.Length;i++)
-            { 
+            {
                 /*if (particles[i] != this)
-                {
-                    double dx = X - particles[i].X;
-                    double dy = Y - particles[i].Y;
-                    if (dx < 0) dx = -dx;
-                    else dy = -dy;
-                    if (dy * dy + dx * dx <= (Radius + particles[i].Radius) * (Radius + particles[i].Radius))
-                    //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
-                    {
-                        color = Color.Red;
-                        touched = true;
-                    }
-                }*/
+                 {
+                     double dx = X - particles[i].X;
+                     double dy = Y - particles[i].Y;
+                     if (dy * dy + dx * dx <= (Radius + particles[i].Radius) * (Radius + particles[i].Radius))
+                     //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
+                     {
+                         color = Color.Red;
+                         touched = true;
+                     }
+                 }*/
 
-                if (this != particles[i])
+                if (particles[i] != this)
                 {
                     if (particlecollision(ref particles[i].X,ref particles[i].Y,ref particles[i].Radius))
                     {
