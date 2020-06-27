@@ -23,13 +23,17 @@ namespace Fizyka_smietnik
         public bool physicsRuning = false;
         public bool physicsPause = false;
 
-        public bool debugFPS = true;
+        public bool debugFPS = false;
         public bool debuginfo = false;
 
         public long physicsFPS = 0;
         public long drawFPS = 0;
 
+        public int defaultRadius = 4;
+
         public long ticktime = Stopwatch.Frequency / 60;
+
+        Size defaultFormSize;
 
         Size box = new Size(574, 384);
 
@@ -42,16 +46,17 @@ namespace Fizyka_smietnik
         public Form1()
         {
             InitializeComponent();
+            defaultFormSize = Size;
         }
 
             //NARYSOWANIE GRANIC
         public void drawBorders(Graphics drawing)
         {
             Pen borderPen = new Pen(Color.Black);
-            drawing.DrawLine(borderPen, 0, 0, pictureBox1.Size.Width - 1, 0);
-            drawing.DrawLine(borderPen, 0, pictureBox1.Size.Height - 1, pictureBox1.Size.Width - 1, pictureBox1.Size.Height - 1);
-            drawing.DrawLine(borderPen, 0, 0, 0, pictureBox1.Size.Height - 1);
-            drawing.DrawLine(borderPen, pictureBox1.Size.Width - 1, 0, pictureBox1.Size.Width - 1, pictureBox1.Size.Height - 1);
+            drawing.DrawLine(borderPen, 0, 0, box.Width - 1, 0);
+            drawing.DrawLine(borderPen, 0, box.Height - 1, box.Width - 1, box.Height - 1);
+            drawing.DrawLine(borderPen, 0, 0, 0, box.Height - 1);
+            drawing.DrawLine(borderPen, box.Width - 1, 0, box.Width - 1, box.Height - 1);
         }
 
         public void drawParticles(Graphics drawing)
@@ -139,7 +144,7 @@ namespace Fizyka_smietnik
                     }
                     for (int i = 0; i < particles.Length; i++)
                     {
-                        particles[i].updateparticle(PhysicsTicks,particles);
+                        particles[i].updateparticle(PhysicsTicks,particles,box);
                     }
                     PhysicsTimer.Stop();
                     PhysicsTicks = PhysicsTimer.ElapsedTicks;
@@ -154,9 +159,13 @@ namespace Fizyka_smietnik
 
         private void button1_Click(object sender, EventArgs e)
         {
+            AutoSize = false;
+            Size = defaultFormSize;
             Random rng = new Random(); //UTWORZENIE SEEDA RNG
-
+            box.Width = Convert.ToInt32(numericUpDown3.Value) * defaultRadius;
+            box.Height = Convert.ToInt32(numericUpDown4.Value) * defaultRadius;
             pictureBox1.Size=box;
+            AutoSize = true;
             if (physicsThread != null)
             {
                 physicsThread.Abort();
@@ -175,7 +184,7 @@ namespace Fizyka_smietnik
 
             particles = new Particle[numberofparticles];
             for (int i = 0; i < numberofparticles; i++)
-                particles[i] = new Particle(10, box.Width , pictureBox1.Height, maxvel , rng);
+                particles[i] = new Particle(defaultRadius, box.Width , pictureBox1.Height, maxvel , rng);
 
                 //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
 
@@ -230,6 +239,20 @@ namespace Fizyka_smietnik
             if (debuginfo) debuginfo = false;
             else debuginfo = true;
         }
+
+        private void changedL(object sender, EventArgs e)
+        {
+            // 5L <= H
+            while (5*Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
+                numericUpDown4.Value+= 5 * Convert.ToInt32(numericUpDown3.Value)-Convert.ToInt32(numericUpDown4.Value); 
+        }
+
+        private void changeH(object sender, EventArgs e)
+        {
+            // H >= 5L
+            while (5 * Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
+                numericUpDown3.Value-= 5 * Convert.ToInt32(numericUpDown3.Value) - Convert.ToInt32(numericUpDown4.Value);
+        }
     }
 
     public class Particle
@@ -256,8 +279,8 @@ namespace Fizyka_smietnik
         public Particle( int radius, int width, int height, int maxvel, Random rng)          //LOSOWE UTWORZENIE czastki
         {
             Radius = radius;
-            X = 10 + rng.Next() % (width - radius - 1);
-            Y = 10 + rng.Next() % (height - radius - 1);
+            X = Radius + rng.Next() % (width - 2*Radius - 1);
+            Y = Radius + rng.Next() % (height - 2*Radius - 1);
             if (maxvel == 0)
             {
                 velX = 0;
@@ -274,12 +297,12 @@ namespace Fizyka_smietnik
                 velY = -rng.Next() % (maxvel);
         }
 
-        public void updateparticle(long ticks , Particle[] particles)
+        public void updateparticle(long ticks , Particle[] particles, Size box)
         {
             X += ((double)ticks / Stopwatch.Frequency) * velX;
             Y += ((double)ticks / Stopwatch.Frequency) * velY;
             velY += ((double)ticks / Stopwatch.Frequency) * 1000;
-            bordercollision();
+            bordercollision(box);
             multipleparticlescollisions(particles);
         }
 
@@ -344,13 +367,13 @@ namespace Fizyka_smietnik
             else
                 return true;
         }
-        public void bordercollision()
+        public void bordercollision(Size box)
         {
             if (X < Radius && velX < 0)
                 velX = -velX*0.7;
-            if (X > 574 - Radius - 1 && velX>0)
+            if (X > box.Width - Radius - 1 && velX>0)
                 velX = -velX*0.7;
-            if (Y > 384- Radius-1 && velY > 0)
+            if (Y > box.Height- Radius-1 && velY > 0)
                 velY = (-velY)*0.85;
             if (Y < Radius && velY < 0)
                 velY = (-velY)*0.85;
