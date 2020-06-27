@@ -249,9 +249,16 @@ namespace Fizyka_smietnik
 
         public Particle(int radius, int width, int height, int maxvel, Random rng)          //LOSOWE UTWORZENIE czastki
         {
+            
             Radius = radius;
             X = 10 + rng.Next() % (width - radius - 1);
             Y = 10 + rng.Next() % (height - radius - 1);
+            if (maxvel == 0)
+            {
+                velX = 0;
+                velY = 0;
+                return;
+            }
             if ((1 + rng.Next()) % 2 == 1)
                 velX = rng.Next() % (maxvel);
             else
