@@ -161,10 +161,8 @@ namespace Fizyka_smietnik
 
             int numberofparticles = 5;          //WCZYTANIE WARTOSCI Z OKNA
             int maxvel = 100;
-            if (textBox1.Text!="")
-                numberofparticles = Convert.ToInt32(textBox1.Text);
-            if (textBox2.Text != "")
-                maxvel = Convert.ToInt32(textBox2.Text);
+            numberofparticles = Convert.ToInt32(numericUpDown1.Value);
+            maxvel =  Convert.ToInt32(numericUpDown2.Value);
            
                         //UTWORZENIE TABLICY CZASTEK
 
