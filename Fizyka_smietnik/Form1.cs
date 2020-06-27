@@ -29,6 +29,8 @@ namespace Fizyka_smietnik
         public long physicsFPS = 0;
         public long drawFPS = 0;
 
+        public int defaultRadius = 10;
+
         public long ticktime = Stopwatch.Frequency / 60;
 
         Size box = new Size(574, 384);
@@ -176,7 +178,7 @@ namespace Fizyka_smietnik
 
             particles = new Particle[numberofparticles];
             for (int i = 0; i < numberofparticles; i++)
-                particles[i] = new Particle(10, box.Width , pictureBox1.Height, maxvel , rng);
+                particles[i] = new Particle(defaultRadius, box.Width , pictureBox1.Height, maxvel , rng);
 
                 //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
 
@@ -257,8 +259,8 @@ namespace Fizyka_smietnik
         public Particle( int radius, int width, int height, int maxvel, Random rng)          //LOSOWE UTWORZENIE czastki
         {
             Radius = radius;
-            X = 10 + rng.Next() % (width - radius - 1);
-            Y = 10 + rng.Next() % (height - radius - 1);
+            X = Radius + rng.Next() % (width - 2*Radius - 1);
+            Y = Radius + rng.Next() % (height - 2*Radius - 1);
             if (maxvel == 0)
             {
                 velX = 0;
