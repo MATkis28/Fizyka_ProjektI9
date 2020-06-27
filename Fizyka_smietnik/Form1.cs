@@ -48,10 +48,10 @@ namespace Fizyka_smietnik
         public void drawBorders(Graphics drawing)
         {
             Pen borderPen = new Pen(Color.Black);
-            drawing.DrawLine(borderPen, 0, 0, pictureBox1.Size.Width - 1, 0);
-            drawing.DrawLine(borderPen, 0, pictureBox1.Size.Height - 1, pictureBox1.Size.Width - 1, pictureBox1.Size.Height - 1);
-            drawing.DrawLine(borderPen, 0, 0, 0, pictureBox1.Size.Height - 1);
-            drawing.DrawLine(borderPen, pictureBox1.Size.Width - 1, 0, pictureBox1.Size.Width - 1, pictureBox1.Size.Height - 1);
+            drawing.DrawLine(borderPen, 0, 0, box.Width - 1, 0);
+            drawing.DrawLine(borderPen, 0, box.Height - 1, box.Width - 1, box.Height - 1);
+            drawing.DrawLine(borderPen, 0, 0, 0, box.Height - 1);
+            drawing.DrawLine(borderPen, box.Width - 1, 0, box.Width - 1, box.Height - 1);
         }
 
         public void drawParticles(Graphics drawing)
@@ -139,7 +139,7 @@ namespace Fizyka_smietnik
                     }
                     for (int i = 0; i < particles.Length; i++)
                     {
-                        particles[i].updateparticle(PhysicsTicks,particles);
+                        particles[i].updateparticle(PhysicsTicks,particles,box);
                     }
                     PhysicsTimer.Stop();
                     PhysicsTicks = PhysicsTimer.ElapsedTicks;
@@ -155,7 +155,8 @@ namespace Fizyka_smietnik
         private void button1_Click(object sender, EventArgs e)
         {
             Random rng = new Random(); //UTWORZENIE SEEDA RNG
-
+            box.Width = Convert.ToInt32(numericUpDown3.Value);
+            box.Height = Convert.ToInt32(numericUpDown4.Value);
             pictureBox1.Size=box;
             if (physicsThread != null)
             {
@@ -274,12 +275,12 @@ namespace Fizyka_smietnik
                 velY = -rng.Next() % (maxvel);
         }
 
-        public void updateparticle(long ticks , Particle[] particles)
+        public void updateparticle(long ticks , Particle[] particles, Size box)
         {
             X += ((double)ticks / Stopwatch.Frequency) * velX;
             Y += ((double)ticks / Stopwatch.Frequency) * velY;
             velY += ((double)ticks / Stopwatch.Frequency) * 1000;
-            bordercollision();
+            bordercollision(box);
             multipleparticlescollisions(particles);
         }
 
@@ -344,13 +345,13 @@ namespace Fizyka_smietnik
             else
                 return true;
         }
-        public void bordercollision()
+        public void bordercollision(Size box)
         {
             if (X < Radius && velX < 0)
                 velX = -velX*0.7;
-            if (X > 574 - Radius - 1 && velX>0)
+            if (X > box.Width - Radius - 1 && velX>0)
                 velX = -velX*0.7;
-            if (Y > 384- Radius-1 && velY > 0)
+            if (Y > box.Height- Radius-1 && velY > 0)
                 velY = (-velY)*0.85;
             if (Y < Radius && velY < 0)
                 velY = (-velY)*0.85;
