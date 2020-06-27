@@ -117,7 +117,7 @@ namespace Fizyka_smietnik
 
         public void physics()
         {
-            long PhysycsTicks = 0;
+            long PhysicsTicks = 0;
             Stopwatch PhysicsTimer = new Stopwatch();
 
             PhysicsTimer.Start();
@@ -132,14 +132,16 @@ namespace Fizyka_smietnik
                     }
                     for (int i = 0; i < particles.Length; i++)
                     {
-                        particles[i].updateparticle(PhysycsTicks,particles);
+                        particles[i].updateparticle(PhysicsTicks,particles);
                     }
                     PhysicsTimer.Stop();
-                    PhysycsTicks = PhysicsTimer.ElapsedTicks;
+                    PhysicsTicks = PhysicsTimer.ElapsedTicks;
                     PhysicsTimer.Restart();
-                    physicsFPS =Stopwatch.Frequency/ PhysycsTicks;
+                    if (PhysicsTicks == 0)
+                    System.Threading.Thread.Sleep(1);
+                    else
+                    physicsFPS =Stopwatch.Frequency/ PhysicsTicks;
                 }
-                //Thread.Sleep(1);
             }
         }
 
