@@ -104,7 +104,7 @@ namespace Fizyka_smietnik
                 drawWatch.Restart();
                 drawFrame(SimDrawing , bmg);
                 showFPS(SimDrawing, drawFPS, physicsFPS);
-                showParticleInfo(SimDrawing);
+               // showParticleInfo(SimDrawing);
                 drawParticles(SimDrawing);
                 drawBorders(SimDrawing);
                 drawWatch.Stop();
@@ -136,7 +136,7 @@ namespace Fizyka_smietnik
                     PhysicsTimer.Restart();
                     physicsFPS =Stopwatch.Frequency/ PhysycsTicks;
                 }
-                Thread.Sleep(1);
+                //Thread.Sleep(1);
             }
         }
 
@@ -148,6 +148,10 @@ namespace Fizyka_smietnik
             if (physicsThread != null)
             {
                 physicsThread.Abort();
+            }
+            if (drawThread != null)
+            {
+                drawThread.Abort();
             }
 
             int numberofparticles = 5;          //WCZYTANIE WARTOSCI Z OKNA
@@ -164,12 +168,11 @@ namespace Fizyka_smietnik
                 particles[i] = new Particle(10, pictureBox1.Width , pictureBox1.Height, maxvel , rng);
 
                 //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
-            if (drawThread == null)
-            {
+
                 drawingRunning = true;
                 drawThread = new Thread(draw);
                 drawThread.Start();
-            }
+
                 physicsRuning = true;
                 physicsPause = true;
                 button2.Text = "Physics Paused";
@@ -254,22 +257,57 @@ namespace Fizyka_smietnik
         public bool particlecollision(Particle secondparticle)
         {
             if (secondparticle != this)
-            {    if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= Radius + secondparticle.Radius)
+            {
+                double dx = X - secondparticle.X;
+                double dy = Y - secondparticle.Y;
+                if (dx < 0) dx = -dx;
+                if (dy < 0) dy = -dy;
+                if (dy * dy + dx * dx <= (Radius + secondparticle.Radius) * (Radius + secondparticle.Radius))
+                //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
                 {
+                    color = Color.Red;
                     return true;
                 }
             }
+            return false;
+        }
+        public bool particlecollision(ref double X1,ref double Y2 ,ref int R2)
+        {
+                double dx = X - X1;
+                double dy = Y - Y2;
+                if (dy * dy + dx * dx <= (Radius + R2) * (Radius + R2))
+                //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
+                {
+                    color = Color.Red;
+                    return true;
+                }
             return false;
         }
         public bool multipleparticlescollisions(Particle[] particles)
         {
             bool touched = false;
             for (int i = 0; i<particles.Length;i++)
-            {
-                if (particlecollision(particles[i]))
+            { 
+                /*if (particles[i] != this)
                 {
-                    touched = true;
-                    color = Color.Red;
+                    double dx = X - particles[i].X;
+                    double dy = Y - particles[i].Y;
+                    if (dx < 0) dx = -dx;
+                    else dy = -dy;
+                    if (dy * dy + dx * dx <= (Radius + particles[i].Radius) * (Radius + particles[i].Radius))
+                    //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
+                    {
+                        color = Color.Red;
+                        touched = true;
+                    }
+                }*/
+
+                if (this != particles[i])
+                {
+                    if (particlecollision(ref particles[i].X,ref particles[i].Y,ref particles[i].Radius))
+                    {
+                        touched = true;
+                    }
                 }
             }
             if (!touched)
@@ -287,13 +325,23 @@ namespace Fizyka_smietnik
             if (X > 574 - Radius - 1 && velX>0)
                 velX = -velX*0.7;
             if (Y > 384- Radius-1 && velY > 0)
-                velY = (-velY)*0.9;
+                velY = (-velY)*0.85;
             if (Y < Radius && velY < 0)
-                velY = (-velY)*0.90;
+                velY = (-velY)*0.85;
         }
         public void resolvecollision( Particle collidedParticle)
         {
             //TODO
+        }
+
+
+        public double distance_nosqrt(double x1, double y1, double x2, double y2)
+        {
+            double dx = x1 - x2;
+            double dy = y1 - y2;
+            if (dx < 0) dx = -dx;
+            if (dy < 0) dy = -dy;
+            return (dy * dy + dx * dx);
         }
     }
 
@@ -307,6 +355,14 @@ namespace Fizyka_smietnik
             if (dx < 0) dx = -dx;
             if (dy < 0) dy = -dy;
             return (double)Math.Sqrt((dy * dy + dx * dx));
+        }
+        public double distance_nosqrt(double x1, double y1, double x2, double y2)
+        {
+            double dx = x1 - x2;
+            double dy = y1 - y2;
+            if (dx < 0) dx = -dx;
+            if (dy < 0) dy = -dy;
+            return (dy * dy + dx * dx);
         }
 
     }
