@@ -13,7 +13,6 @@ using System.Runtime.CompilerServices;
 
 namespace Fizyka_smietnik
 {
-
     public partial class Form1 : Form
     {
         Thread drawThread;
@@ -234,6 +233,8 @@ namespace Fizyka_smietnik
 
     public class Particle
     {
+        //stałe
+        public const double d = 1.05 * 1.05;
 
         geometry geomath = new geometry();
 
@@ -290,7 +291,7 @@ namespace Fizyka_smietnik
             {
                 double dx = X - secondparticle.X;
                 double dy = Y - secondparticle.Y;
-                if (dy * dy + dx * dx <= (Radius + secondparticle.Radius) * (Radius + secondparticle.Radius))
+                if (dy * dy + dx * dx <= (Radius + secondparticle.Radius) * (Radius + secondparticle.Radius) * d) 
                 //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
                 {
                     color = Color.Red;
@@ -301,9 +302,9 @@ namespace Fizyka_smietnik
         }
         public bool particlecollision(ref double X1,ref double Y2 ,ref int R2)
         {
-                double dx = X - X1;
-                double dy = Y - Y2;
-                if (dy * dy + dx * dx <= (Radius + R2) * (Radius + R2))
+            double dx = X - X1;
+            double dy = Y - Y2;
+            if (dy * dy + dx * dx <= (Radius + R2) * (Radius + R2) * d)
                 //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
                 {
                     color = Color.Red;
@@ -333,6 +334,7 @@ namespace Fizyka_smietnik
                     if (particlecollision(ref particles[i].X,ref particles[i].Y,ref particles[i].Radius))
                     {
                         touched = true;
+                        resolvecollision(particles[i]);
                     }
                 }
             }
@@ -357,7 +359,46 @@ namespace Fizyka_smietnik
         }
         public void resolvecollision( Particle collidedParticle)
         {
-            //TODO
+            //koordynaty polarne
+            double wektor1wartosc = velX * velX + velY * velY;
+            double wektor1kat;
+            if (velY == 0)
+                wektor1kat = velX > 0 ? 0 : 180;
+            else if (velX == 0)
+                wektor1kat = -velY > 0 ? -90 : 90;
+            else
+                wektor1kat = Math.Atan2(-velY, velX) * 180 / Math.PI;
+
+            double wektor2wartosc = collidedParticle.velX * collidedParticle.velX + collidedParticle.velY * collidedParticle.velY;
+            double wektor2kat;
+            if (velY == 0)
+                wektor2kat = collidedParticle.velX > 0 ? 0 : 180;
+            else if (velX == 0)
+                wektor2kat = collidedParticle.velY < 0 ? -90 : 90;
+            else
+                wektor2kat = Math.Atan2(-collidedParticle.velY, collidedParticle.velX) * 180 / Math.PI;
+
+            //"przesuniecie" ukladu wspolrzednych
+            double polozenieX = collidedParticle.X - this.X;
+            double polozenieY = -(collidedParticle.Y - this.Y);
+            double polozenieKat;
+            if (polozenieY == 0)
+                polozenieKat = polozenieX > 0 ? 0 : 180;
+            else if (polozenieX == 0)
+                polozenieKat = polozenieY > 0 ? -90 : 90;
+            else
+                polozenieKat = Math.Atan2(polozenieY, polozenieX) * 180 / Math.PI;
+
+            //ustalenie nowych kątów i rozklad skladowych
+            double wektor1katRoboczy = wektor1kat - polozenieKat;
+            double wektorP1wartosc = Math.Sin(wektor1katRoboczy) * wektor1wartosc;
+            double wektorR1wartosc = Math.Cos(wektor1katRoboczy) * wektor1wartosc;
+
+            double wektor2katRoboczy = wektor2kat - polozenieKat;
+            double wektorP2wartosc = Math.Sin(wektor2katRoboczy) * wektor2wartosc;
+            double wektorR2wartosc = Math.Cos(wektor2katRoboczy) * wektor2wartosc;
+
+
         }
     }
 
