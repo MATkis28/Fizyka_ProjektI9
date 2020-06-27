@@ -22,7 +22,7 @@ namespace Fizyka_smietnik
         public bool physicsRuning = false;
         public bool physicsPause = false;
 
-        public bool debugFPS = false;
+        public bool debugFPS = true;
         public bool debuginfo = false;
 
         public long physicsFPS = 0;
