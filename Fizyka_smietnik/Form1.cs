@@ -22,6 +22,9 @@ namespace Fizyka_smietnik
         public bool physicsRuning = false;
         public bool physicsPause = false;
 
+        public bool debugFPS = false;
+        public bool debuginfo = false;
+
         public long physicsFPS = 0;
         public long drawFPS = 0;
 
@@ -103,8 +106,8 @@ namespace Fizyka_smietnik
             {
                 drawWatch.Restart();
                 drawFrame(SimDrawing , bmg);
-                showFPS(SimDrawing, drawFPS, physicsFPS);
-               // showParticleInfo(SimDrawing);
+                if (debugFPS) showFPS(SimDrawing, drawFPS, physicsFPS);
+                if (debuginfo) showParticleInfo(SimDrawing);
                 drawParticles(SimDrawing);
                 drawBorders(SimDrawing);
                 drawWatch.Stop();
@@ -208,6 +211,18 @@ namespace Fizyka_smietnik
             if (physicsThread!=null)
             physicsThread.Abort();
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            if (debugFPS) debugFPS = false;
+            else debugFPS = true;
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            if (debuginfo) debuginfo = false;
+            else debuginfo = true;
+        }
     }
 
     public class Particle
@@ -260,8 +275,6 @@ namespace Fizyka_smietnik
             {
                 double dx = X - secondparticle.X;
                 double dy = Y - secondparticle.Y;
-                if (dx < 0) dx = -dx;
-                if (dy < 0) dy = -dy;
                 if (dy * dy + dx * dx <= (Radius + secondparticle.Radius) * (Radius + secondparticle.Radius))
                 //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
                 {
@@ -332,16 +345,6 @@ namespace Fizyka_smietnik
         public void resolvecollision( Particle collidedParticle)
         {
             //TODO
-        }
-
-
-        public double distance_nosqrt(double x1, double y1, double x2, double y2)
-        {
-            double dx = x1 - x2;
-            double dy = y1 - y2;
-            if (dx < 0) dx = -dx;
-            if (dy < 0) dy = -dy;
-            return (dy * dy + dx * dx);
         }
     }
 
