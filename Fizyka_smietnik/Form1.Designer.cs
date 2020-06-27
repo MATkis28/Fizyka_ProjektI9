@@ -150,19 +150,14 @@
             // 
             // numericUpDown3
             // 
-            this.numericUpDown3.Increment = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
             this.numericUpDown3.Location = new System.Drawing.Point(17, 137);
             this.numericUpDown3.Maximum = new decimal(new int[] {
-            1600,
+            1000,
             0,
             0,
             0});
             this.numericUpDown3.Minimum = new decimal(new int[] {
-            100,
+            20,
             0,
             0,
             0});
@@ -170,10 +165,11 @@
             this.numericUpDown3.Size = new System.Drawing.Size(92, 20);
             this.numericUpDown3.TabIndex = 11;
             this.numericUpDown3.Value = new decimal(new int[] {
-            574,
+            20,
             0,
             0,
             0});
+            this.numericUpDown3.ValueChanged += new System.EventHandler(this.changedL);
             // 
             // label3
             // 
@@ -195,14 +191,9 @@
             // 
             // numericUpDown4
             // 
-            this.numericUpDown4.Increment = new decimal(new int[] {
-            10,
-            0,
-            0,
-            0});
             this.numericUpDown4.Location = new System.Drawing.Point(16, 163);
             this.numericUpDown4.Maximum = new decimal(new int[] {
-            900,
+            2000,
             0,
             0,
             0});
@@ -215,16 +206,17 @@
             this.numericUpDown4.Size = new System.Drawing.Size(92, 20);
             this.numericUpDown4.TabIndex = 13;
             this.numericUpDown4.Value = new decimal(new int[] {
-            384,
+            100,
             0,
             0,
             0});
+            this.numericUpDown4.ValueChanged += new System.EventHandler(this.changeH);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(784, 461);
+            this.ClientSize = new System.Drawing.Size(190, 461);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.numericUpDown4);
             this.Controls.Add(this.label3);

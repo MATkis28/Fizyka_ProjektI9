@@ -23,15 +23,17 @@ namespace Fizyka_smietnik
         public bool physicsRuning = false;
         public bool physicsPause = false;
 
-        public bool debugFPS = true;
+        public bool debugFPS = false;
         public bool debuginfo = false;
 
         public long physicsFPS = 0;
         public long drawFPS = 0;
 
-        public int defaultRadius = 10;
+        public int defaultRadius = 4;
 
         public long ticktime = Stopwatch.Frequency / 60;
+
+        Size defaultFormSize;
 
         Size box = new Size(574, 384);
 
@@ -44,6 +46,7 @@ namespace Fizyka_smietnik
         public Form1()
         {
             InitializeComponent();
+            defaultFormSize = Size;
         }
 
             //NARYSOWANIE GRANIC
@@ -156,10 +159,13 @@ namespace Fizyka_smietnik
 
         private void button1_Click(object sender, EventArgs e)
         {
+            AutoSize = false;
+            Size = defaultFormSize;
             Random rng = new Random(); //UTWORZENIE SEEDA RNG
-            box.Width = Convert.ToInt32(numericUpDown3.Value);
-            box.Height = Convert.ToInt32(numericUpDown4.Value);
+            box.Width = Convert.ToInt32(numericUpDown3.Value) * defaultRadius;
+            box.Height = Convert.ToInt32(numericUpDown4.Value) * defaultRadius;
             pictureBox1.Size=box;
+            AutoSize = true;
             if (physicsThread != null)
             {
                 physicsThread.Abort();
@@ -232,6 +238,20 @@ namespace Fizyka_smietnik
         {
             if (debuginfo) debuginfo = false;
             else debuginfo = true;
+        }
+
+        private void changedL(object sender, EventArgs e)
+        {
+            // 5L <= H
+            while (5*Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
+                numericUpDown4.Value+= 5 * Convert.ToInt32(numericUpDown3.Value)-Convert.ToInt32(numericUpDown4.Value); 
+        }
+
+        private void changeH(object sender, EventArgs e)
+        {
+            // H >= 5L
+            while (5 * Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
+                numericUpDown3.Value-= 5 * Convert.ToInt32(numericUpDown3.Value) - Convert.ToInt32(numericUpDown4.Value);
         }
     }
 
