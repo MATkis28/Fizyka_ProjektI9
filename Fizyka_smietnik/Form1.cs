@@ -221,6 +221,11 @@ namespace Fizyka_smietnik
 
                      //WCZYTANIE WARTOSCI Z OKNA
             numberofparticles = Convert.ToInt32(numericUpDown1.Value);
+            if (4 * numberofparticles > nh * nl)
+            {
+                numberofparticles = nh * nl / 4;
+                numericUpDown1.Value = numberofparticles;
+            }
             maxvel =  Convert.ToInt32(numericUpDown2.Value);
             dt = Stopwatch.Frequency / (K * maxvel);
 
