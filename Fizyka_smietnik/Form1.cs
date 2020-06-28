@@ -359,8 +359,8 @@ namespace Fizyka_smietnik
         }
         public void resolvecollision( Particle collidedParticle)
         {
-            //koordynaty polarne
-            double wektor1wartosc = velX * velX + velY * velY;
+            //wspolrzedne polarne
+            double wektor1wartosc = Math.Sqrt(velX * velX + velY * velY);
             double wektor1kat;
             if (velY == 0)
                 wektor1kat = velX > 0 ? 0 : 180;
@@ -369,7 +369,7 @@ namespace Fizyka_smietnik
             else
                 wektor1kat = Math.Atan2(-velY, velX) * 180 / Math.PI;
 
-            double wektor2wartosc = collidedParticle.velX * collidedParticle.velX + collidedParticle.velY * collidedParticle.velY;
+            double wektor2wartosc = Math.Sqrt(collidedParticle.velX * collidedParticle.velX + collidedParticle.velY * collidedParticle.velY);
             double wektor2kat;
             if (velY == 0)
                 wektor2kat = collidedParticle.velX > 0 ? 0 : 180;
@@ -391,14 +391,55 @@ namespace Fizyka_smietnik
 
             //ustalenie nowych kątów i rozklad skladowych
             double wektor1katRoboczy = wektor1kat - polozenieKat;
+            if (wektor1katRoboczy > 180)
+                wektor1katRoboczy -= 360;
+            if (wektor1katRoboczy <= -180)
+                wektor1katRoboczy += 360;
             double wektorP1wartosc = Math.Sin(wektor1katRoboczy) * wektor1wartosc;
             double wektorR1wartosc = Math.Cos(wektor1katRoboczy) * wektor1wartosc;
 
             double wektor2katRoboczy = wektor2kat - polozenieKat;
+            if (wektor2katRoboczy > 180)
+                wektor2katRoboczy -= 360;
+            if (wektor2katRoboczy <= -180)
+                wektor2katRoboczy += 360;
             double wektorP2wartosc = Math.Sin(wektor2katRoboczy) * wektor2wartosc;
             double wektorR2wartosc = Math.Cos(wektor2katRoboczy) * wektor2wartosc;
 
+            //obliczenie wektorów wyjsciowych
+            wektor1wartosc = Math.Sqrt(wektorP1wartosc * wektorP1wartosc + wektorR2wartosc * wektorR2wartosc);
+            if (wektorP1wartosc == 0)
+                wektor1katRoboczy = wektorR2wartosc > 0 ? 0 : 180;
+            else if (wektorR2wartosc == 0)
+                wektor1katRoboczy = wektorP1wartosc > 0 ? -90 : 90;
+            else
+                wektor1katRoboczy = Math.Atan2(wektorP1wartosc, wektorR2wartosc) * 180 / Math.PI;
 
+            wektor2wartosc = Math.Sqrt(wektorP2wartosc * wektorP2wartosc + wektorR1wartosc * wektorR1wartosc);
+            if (wektorP2wartosc == 0)
+                wektor2katRoboczy = wektorR1wartosc > 0 ? 0 : 180;
+            else if (wektorR1wartosc == 0)
+                wektor2katRoboczy = wektorP2wartosc > 0 ? -90 : 90;
+            else
+                wektor2katRoboczy = Math.Atan2(wektorP2wartosc, wektorR1wartosc) * 180 / Math.PI;
+
+            //przekształcenie do orginalnego układu współrzędnych
+            wektor1kat = wektor1katRoboczy + polozenieKat;
+            wektor2kat = wektor2katRoboczy + polozenieKat;
+            if (wektor1kat > 180)
+                wektor1kat -= 360;
+            if (wektor1kat <= -180)
+                wektor1kat += 360;
+            if (wektor2kat > 180)
+                wektor2kat -= 360;
+            if (wektor2kat <= -180)
+                wektor2kat += 360;
+
+            //przeksztalcenie do wspolrzednych x-y
+            this.velY = -Math.Sin(wektor1kat) * wektor1wartosc;
+            this.velX = Math.Cos(wektor1kat) * wektor1wartosc;
+            collidedParticle.velY = -Math.Sin(wektor2kat) * wektor2wartosc;
+            collidedParticle.velX = Math.Cos(wektor2kat) * wektor2wartosc;
         }
     }
 
