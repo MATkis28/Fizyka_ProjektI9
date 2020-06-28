@@ -26,15 +26,17 @@ namespace Fizyka_smietnik
         public bool debugFPS = false;
         public bool debuginfo = false;
 
-        public long physicsFPS = 0;
-        public long drawFPS = 0;
 
+        public const int maxvel = 100;
+        public const int K = 1;
+        public long dt = Stopwatch.Frequency / (K* maxvel);
+        public long fps = 0;
+        public int tps = 0;
+        public long ticksCount = 0;
+        public long skippedTicksCount = 0;
+        
         public int defaultRadius = 4;
-
-        public long ticktime = Stopwatch.Frequency / 60;
-
         Size defaultFormSize;
-
         Size box = new Size(574, 384);
 
         Font drawFont = new Font("Arial", 8);
@@ -95,15 +97,20 @@ namespace Fizyka_smietnik
             drawing.Clear(Color.White);
         }
 
-        public void showFPS(Graphics drawing ,long dFPS, long pFPS)
+        public void showFPS(Graphics drawing)
         {
-            drawing.DrawString(("Draw FPS: " + dFPS.ToString() + " Physics FPS: " + pFPS.ToString()), drawFont, blackBrush, 5 , 5);
+            drawing.DrawString(("FPS: " + fps.ToString()), drawFont, blackBrush, 5 , 5);
+        }
+
+        public void showTPS(Graphics drawing)
+        {
+            drawing.DrawString(("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + " Simulation time: " + (1000*ticksCount*dt/Stopwatch.Frequency).ToString() + "ms Ticks: " + ticksCount.ToString() + " Skipped ticks: " + skippedTicksCount.ToString()), drawFont, blackBrush, 5, 15);
         }
 
         public void showParticleInfo (Graphics drawing)
         {
             for (int i = 0; i < particles.Length && i < 30; i++)
-                drawing.DrawString(i.ToString() + ") X: " + particles[i].X.ToString() + " Y: " + particles[i].Y.ToString() + " VelX: " + particles[i].velX.ToString() + " VelY: " + particles[i].velY.ToString(), drawFont , blackBrush, 100 , 10*(i + 2));
+                drawing.DrawString(i.ToString() + ") X: " + particles[i].X.ToString() + " Y: " + particles[i].Y.ToString() + " VelX: " + particles[i].velX.ToString() + " VelY: " + particles[i].velY.ToString(), drawFont , blackBrush, 100 , 10 + 10*(i + 2));
         }
 
         public void draw()
@@ -116,45 +123,65 @@ namespace Fizyka_smietnik
             {
                 drawWatch.Restart();
                 drawFrame(SimDrawing , bmg);
-                if (debugFPS) showFPS(SimDrawing, drawFPS, physicsFPS);
+                if (debugFPS) showFPS(SimDrawing);
+                if (debugFPS) showTPS(SimDrawing);
                 if (debuginfo) showParticleInfo(SimDrawing);
                 drawParticles(SimDrawing);
                 drawBorders(SimDrawing);
                 drawWatch.Stop();
-                drawFPS = Stopwatch.Frequency/ drawWatch.ElapsedTicks;
+                fps = Stopwatch.Frequency/ drawWatch.ElapsedTicks;
             }
         }
 
         public void physics()
         {
-            long PhysicsTicks = 0;
-            long NextTick = 0;
             Stopwatch PhysicsTimer = new Stopwatch();
+            long nextTick = 0;
+            int skippedTicksPackage = 10;
+            long nextTpsCount = Stopwatch.Frequency;
+            int tps = 0;
 
             PhysicsTimer.Start();
-            NextTick = PhysicsTimer.ElapsedTicks+ticktime;
-            while (physicsRuning)
+            while (physicsRuning && particles != null)
             {
-                if (particles != null)
+                //zatrzymywanie fizyki
+                if(physicsPause)
                 {
-                    while (physicsPause)
-                    {
-                        Thread.Sleep(100);
-                        PhysicsTimer.Restart();
-                    }
-                    for (int i = 0; i < particles.Length; i++)
-                    {
-                        particles[i].updateparticle(PhysicsTicks,particles,box);
-                    }
                     PhysicsTimer.Stop();
-                    PhysicsTicks = PhysicsTimer.ElapsedTicks;
-                    PhysicsTimer.Restart();
-                    if (PhysicsTicks == 0)
-                    System.Threading.Thread.Sleep(1);
-                    else
-                    physicsFPS =Stopwatch.Frequency/ PhysicsTicks;
+                    while (physicsPause)
+                        Thread.Sleep(10);
+                    PhysicsTimer.Start();
+                }
+                //czekanie na kolejny tick
+                while(PhysicsTimer.ElapsedTicks < nextTick)
+                    Thread.Sleep(1);
+                //tick
+                ticksCount++;
+                tps++;
+                physicsTick();
+                //oblicznie czasu kolejnego tick'a
+                nextTick += dt;
+                //sprawdzanie różnicy między teraz i nextTick
+                while(PhysicsTimer.ElapsedTicks - nextTick > skippedTicksPackage * dt)
+                {
+                    //pomijanie pakietu tick'ow
+                    nextTick += skippedTicksPackage * dt;
+                    skippedTicksCount += skippedTicksPackage;
+                }
+                //tps
+                if(PhysicsTimer.ElapsedTicks > nextTpsCount)
+                {
+                    nextTpsCount += Stopwatch.Frequency;
+                    this.tps = tps;
+                    tps = 0;
                 }
             }
+        }
+
+        public void physicsTick()
+        {
+            for (int i = 0; i < particles.Length; i++)
+                particles[i].updateparticle(dt, particles);
         }
 
         private void button1_Click(object sender, EventArgs e)
