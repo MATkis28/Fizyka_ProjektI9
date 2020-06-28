@@ -305,14 +305,14 @@ namespace Fizyka_smietnik
         {
             // 5L <= H
             while (5*Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
-                numericUpDown4.Value+= 5 * Convert.ToInt32(numericUpDown3.Value)-Convert.ToInt32(numericUpDown4.Value); 
+                numericUpDown4.Value= 5 * Convert.ToInt32(numericUpDown3.Value); 
         }
 
         private void changeH(object sender, EventArgs e)
         {
             // H >= 5L
             while (5 * Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
-                numericUpDown3.Value-= (5 * Convert.ToInt32(numericUpDown3.Value) - Convert.ToInt32(numericUpDown4.Value))/5;
+                numericUpDown3.Value= Convert.ToInt32(numericUpDown4.Value)/5;
         }
     }
 
