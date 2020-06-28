@@ -304,7 +304,7 @@ namespace Fizyka_smietnik
     public class Particle
     {
         //stałe
-        public const double d = 1.1 * 1.1;
+        public static double d = 1.05 * 1.05;
 
         geometry geomath = new geometry();
 
