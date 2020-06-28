@@ -27,7 +27,9 @@ namespace Fizyka_smietnik
 
         public int numberofparticles = 5;
         public int maxvel = 100;
-        public const int K = 1;
+        public int nh;
+        public int nl;
+        public int K = 1;
         public long dt;
         public long fps = 0;
         public int tps = 0;
@@ -198,8 +200,14 @@ namespace Fizyka_smietnik
             AutoSize = false;
             Size = defaultFormSize;
             Random rng = new Random(); //UTWORZENIE SEEDA RNG
-            box.Width = Convert.ToInt32(numericUpDown3.Value) * defaultRadius;
-            box.Height = Convert.ToInt32(numericUpDown4.Value) * defaultRadius;
+            nh = Convert.ToInt32(numericUpDown4.Value);
+            nl = Convert.ToInt32(numericUpDown3.Value);
+            box.Width = nl * defaultRadius;
+            box.Height = nh * defaultRadius;
+            if (nl < nh)
+                K = nl;
+            else
+                K = nh;
             pictureBox1.Size=box;
             AutoSize = true;
             if (physicsThread != null)
