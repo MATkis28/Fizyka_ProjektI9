@@ -28,7 +28,7 @@ namespace Fizyka_smietnik
         public int numberofparticles = 5;
         public int maxvel = 100;
         public const int K = 1;
-        public long dt = Stopwatch.Frequency / (K* maxvel);
+        public long dt;
         public long fps = 0;
         public int tps = 0;
         public long ticksCount = 0;
