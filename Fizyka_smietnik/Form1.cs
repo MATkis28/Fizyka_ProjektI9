@@ -181,7 +181,7 @@ namespace Fizyka_smietnik
         public void physicsTick()
         {
             for (int i = 0; i < particles.Length; i++)
-                particles[i].updateparticle(dt, particles);
+                particles[i].updateparticle(dt, particles,box);
         }
 
         private void button1_Click(object sender, EventArgs e)
