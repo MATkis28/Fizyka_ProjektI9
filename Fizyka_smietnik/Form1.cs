@@ -59,12 +59,12 @@ namespace Fizyka_smietnik
 
         private void drawParticles(Graphics drawing)
         {
-            SolidBrush particleBrush = new SolidBrush(Color.Black);
+            //SolidBrush particleBrush = new SolidBrush(Color.Black);
             Pen blackPen = new Pen(Color.Black);
             for (int i = 0; i < particles.Length; i++)
             {
-                particleBrush.Color = particles[i].color;
-                drawing.FillEllipse(particleBrush, (float)((particles[i].X - particles[i].Radius) / 1), (float)((particles[i].Y - particles[i].Radius) / 1), 2 * particles[i].Radius, 2 * particles[i].Radius);
+                //particleBrush.Color = particles[i].color;
+                //drawing.FillEllipse(particleBrush, (float)((particles[i].X - particles[i].Radius) / 1), (float)((particles[i].Y - particles[i].Radius) / 1), 2 * particles[i].Radius, 2 * particles[i].Radius);
                 drawing.DrawEllipse(blackPen, (float)(particles[i].X - particles[i].Radius), (float)(particles[i].Y - particles[i].Radius), 2 * particles[i].Radius, 2 * particles[i].Radius);
                 blackPen.Color = Color.Black;
             }
@@ -378,7 +378,7 @@ namespace Fizyka_smietnik
                 if (dy * dy + dx * dx <= (Radius + secondparticle.Radius) * (Radius + secondparticle.Radius) * d) 
                 //if (geometry.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
                 {
-                    color = Color.Red;
+                    //color = Color.Red;
                     return true;
                 }
             }
@@ -390,7 +390,7 @@ namespace Fizyka_smietnik
             double dy = Y - Y2;
             if (dy * dy + dx * dx < (Radius + R2) * (Radius + R2) * d)
                 {                     
-                    color = Color.Red;
+                    //color = Color.Red;
                     return true;
                 }
             return false;
@@ -420,7 +420,7 @@ namespace Fizyka_smietnik
             }
             if (!touched)
             {
-                color = Color.Transparent;
+                //color = Color.Transparent;
                 return false;
             }
             else
