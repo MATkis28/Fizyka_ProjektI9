@@ -206,8 +206,9 @@ namespace Fizyka_smietnik
             int maxvel = 100;
             numberofparticles = Convert.ToInt32(numericUpDown1.Value);
             maxvel =  Convert.ToInt32(numericUpDown2.Value);
-           
-                        //UTWORZENIE TABLICY CZASTEK
+            dt = Stopwatch.Frequency / (K * maxvel);
+
+            //UTWORZENIE TABLICY CZASTEK
 
             particles = new Particle[numberofparticles];
             for (int i = 0; i < numberofparticles; i++)
