@@ -99,7 +99,17 @@ namespace Fizyka_smietnik
 
         public void showFPS(Graphics drawing)
         {
-            drawing.DrawString(("FPS: " + fps.ToString()), drawFont, blackBrush, 5 , 5);
+            label5.Invoke(new MethodInvoker(
+                         delegate ()
+                         {
+                             label5.Text = ("FPS: " + fps.ToString());
+                         }));
+            label6.Invoke(new MethodInvoker(
+                         delegate ()
+                         {
+                             label6.Text = (("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + "\nSimulation time: " + (1000 * ticksCount * dt / Stopwatch.Frequency).ToString() + "ms \nTicks: " + ticksCount.ToString() + "\nSkipped ticks: " + skippedTicksCount.ToString()));
+                         }));
+            //drawing.DrawString(("FPS: " + fps.ToString()), drawFont, blackBrush, 5 , 5);
         }
 
         public void showTPS(Graphics drawing)
@@ -124,7 +134,7 @@ namespace Fizyka_smietnik
                 drawWatch.Restart();
                 drawFrame(SimDrawing , bmg);
                 if (debugFPS) showFPS(SimDrawing);
-                if (debugFPS) showTPS(SimDrawing);
+                //if (debugFPS) showTPS(SimDrawing);
                 if (debuginfo) showParticleInfo(SimDrawing);
                 drawParticles(SimDrawing);
                 drawBorders(SimDrawing);
@@ -258,8 +268,18 @@ namespace Fizyka_smietnik
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (debugFPS) debugFPS = false;
-            else debugFPS = true;
+            if (debugFPS)
+            {
+                debugFPS = false;
+                label5.Visible = false;
+                label6.Visible = false;
+            }
+            else
+            {
+                debugFPS = true;
+                label5.Visible = true;
+                label6.Visible = true;
+            }
         }
 
         private void button4_Click(object sender, EventArgs e)

@@ -41,6 +41,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.numericUpDown4 = new System.Windows.Forms.NumericUpDown();
+            this.label5 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
@@ -96,9 +98,9 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(37, 250);
+            this.button3.Location = new System.Drawing.Point(36, 189);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(71, 22);
+            this.button3.Size = new System.Drawing.Size(66, 22);
             this.button3.TabIndex = 7;
             this.button3.Text = "ShowFPS";
             this.button3.UseVisualStyleBackColor = true;
@@ -106,9 +108,9 @@
             // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(37, 278);
+            this.button4.Location = new System.Drawing.Point(36, 217);
             this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(71, 22);
+            this.button4.Size = new System.Drawing.Size(66, 22);
             this.button4.TabIndex = 8;
             this.button4.Text = "DebugInfo";
             this.button4.UseVisualStyleBackColor = true;
@@ -212,11 +214,29 @@
             0});
             this.numericUpDown4.ValueChanged += new System.EventHandler(this.changeH);
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(33, 252);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(0, 13);
+            this.label5.TabIndex = 15;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(14, 270);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(0, 13);
+            this.label6.TabIndex = 16;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(190, 461);
+            this.ClientSize = new System.Drawing.Size(328, 461);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.label5);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.numericUpDown4);
             this.Controls.Add(this.label3);
@@ -258,6 +278,8 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.NumericUpDown numericUpDown4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Label label6;
     }
 }
 
