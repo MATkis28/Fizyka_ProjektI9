@@ -218,8 +218,10 @@ namespace Fizyka_smietnik
             {
                 drawThread.Abort();
             }
+            ticksCount = 0;
+            skippedTicksCount = 0;
 
-                     //WCZYTANIE WARTOSCI Z OKNA
+            //WCZYTANIE WARTOSCI Z OKNA
             numberofparticles = Convert.ToInt32(numericUpDown1.Value);
             if (4 * numberofparticles > nh * nl)
             {
