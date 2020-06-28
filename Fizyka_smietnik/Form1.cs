@@ -22,14 +22,20 @@ namespace Fizyka_smietnik
         public bool physicsRuning = false;
         public bool physicsPause = false;
 
-        public bool debugFPS = true;
+        public bool debugFPS = false;
         public bool debuginfo = false;
 
-        public long physicsFPS = 0;
-        public long drawFPS = 0;
 
-        public long ticktime = Stopwatch.Frequency / 60;
-
+        public const int maxvel = 100;
+        public const int K = 1;
+        public long dt = Stopwatch.Frequency / (K* maxvel);
+        public long fps = 0;
+        public int tps = 0;
+        public long ticksCount = 0;
+        public long skippedTicksCount = 0;
+        
+        public int defaultRadius = 4;
+        Size defaultFormSize;
         Size box = new Size(574, 384);
 
         Font drawFont = new Font("Arial", 8);
@@ -41,16 +47,17 @@ namespace Fizyka_smietnik
         public Form1()
         {
             InitializeComponent();
+            defaultFormSize = Size;
         }
 
             //NARYSOWANIE GRANIC
         public void drawBorders(Graphics drawing)
         {
             Pen borderPen = new Pen(Color.Black);
-            drawing.DrawLine(borderPen, 0, 0, pictureBox1.Size.Width - 1, 0);
-            drawing.DrawLine(borderPen, 0, pictureBox1.Size.Height - 1, pictureBox1.Size.Width - 1, pictureBox1.Size.Height - 1);
-            drawing.DrawLine(borderPen, 0, 0, 0, pictureBox1.Size.Height - 1);
-            drawing.DrawLine(borderPen, pictureBox1.Size.Width - 1, 0, pictureBox1.Size.Width - 1, pictureBox1.Size.Height - 1);
+            drawing.DrawLine(borderPen, 0, 0, box.Width - 1, 0);
+            drawing.DrawLine(borderPen, 0, box.Height - 1, box.Width - 1, box.Height - 1);
+            drawing.DrawLine(borderPen, 0, 0, 0, box.Height - 1);
+            drawing.DrawLine(borderPen, box.Width - 1, 0, box.Width - 1, box.Height - 1);
         }
 
         public void drawParticles(Graphics drawing)
@@ -89,15 +96,30 @@ namespace Fizyka_smietnik
             drawing.Clear(Color.White);
         }
 
-        public void showFPS(Graphics drawing ,long dFPS, long pFPS)
+        public void showFPS(Graphics drawing)
         {
-            drawing.DrawString(("Draw FPS: " + dFPS.ToString() + " Physics FPS: " + pFPS.ToString()), drawFont, blackBrush, 5 , 5);
+            label5.Invoke(new MethodInvoker(
+                         delegate ()
+                         {
+                             label5.Text = ("FPS: " + fps.ToString());
+                         }));
+            label6.Invoke(new MethodInvoker(
+                         delegate ()
+                         {
+                             label6.Text = (("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + "\nSimulation time: " + (1000 * ticksCount * dt / Stopwatch.Frequency).ToString() + "ms \nTicks: " + ticksCount.ToString() + "\nSkipped ticks: " + skippedTicksCount.ToString()));
+                         }));
+            //drawing.DrawString(("FPS: " + fps.ToString()), drawFont, blackBrush, 5 , 5);
+        }
+
+        public void showTPS(Graphics drawing)
+        {
+            drawing.DrawString(("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + " Simulation time: " + (1000*ticksCount*dt/Stopwatch.Frequency).ToString() + "ms Ticks: " + ticksCount.ToString() + " Skipped ticks: " + skippedTicksCount.ToString()), drawFont, blackBrush, 5, 15);
         }
 
         public void showParticleInfo (Graphics drawing)
         {
             for (int i = 0; i < particles.Length && i < 30; i++)
-                drawing.DrawString(i.ToString() + ") X: " + particles[i].X.ToString() + " Y: " + particles[i].Y.ToString() + " VelX: " + particles[i].velX.ToString() + " VelY: " + particles[i].velY.ToString(), drawFont , blackBrush, 100 , 10*(i + 2));
+                drawing.DrawString(i.ToString() + ") X: " + particles[i].X.ToString() + " Y: " + particles[i].Y.ToString() + " VelX: " + particles[i].velX.ToString() + " VelY: " + particles[i].velY.ToString(), drawFont , blackBrush, 100 , 10 + 10*(i + 2));
         }
 
         public void draw()
@@ -110,52 +132,76 @@ namespace Fizyka_smietnik
             {
                 drawWatch.Restart();
                 drawFrame(SimDrawing , bmg);
-                if (debugFPS) showFPS(SimDrawing, drawFPS, physicsFPS);
+                if (debugFPS) showFPS(SimDrawing);
+                //if (debugFPS) showTPS(SimDrawing);
                 if (debuginfo) showParticleInfo(SimDrawing);
                 drawParticles(SimDrawing);
                 drawBorders(SimDrawing);
                 drawWatch.Stop();
-                drawFPS = Stopwatch.Frequency/ drawWatch.ElapsedTicks;
+                fps = Stopwatch.Frequency/ drawWatch.ElapsedTicks;
             }
         }
 
         public void physics()
         {
-            long PhysicsTicks = 0;
-            long NextTick = 0;
             Stopwatch PhysicsTimer = new Stopwatch();
+            long nextTick = 0;
+            int skippedTicksPackage = 10;
+            long nextTpsCount = Stopwatch.Frequency;
+            int tps = 0;
 
             PhysicsTimer.Start();
-            NextTick = PhysicsTimer.ElapsedTicks+ticktime;
-            while (physicsRuning)
+            while (physicsRuning && particles != null)
             {
-                if (particles != null)
+                //zatrzymywanie fizyki
+                if(physicsPause)
                 {
-                    while (physicsPause)
-                    {
-                        Thread.Sleep(100);
-                        PhysicsTimer.Restart();
-                    }
-                    for (int i = 0; i < particles.Length; i++)
-                    {
-                        particles[i].updateparticle(PhysicsTicks,particles,i);
-                    }
                     PhysicsTimer.Stop();
-                    PhysicsTicks = PhysicsTimer.ElapsedTicks;
-                    PhysicsTimer.Restart();
-                    if (PhysicsTicks == 0)
-                    System.Threading.Thread.Sleep(1);
-                    else
-                    physicsFPS =Stopwatch.Frequency/ PhysicsTicks;
+                    while (physicsPause)
+                        Thread.Sleep(10);
+                    PhysicsTimer.Start();
+                }
+                //czekanie na kolejny tick
+                while(PhysicsTimer.ElapsedTicks < nextTick)
+                    Thread.Sleep(1);
+                //tick
+                ticksCount++;
+                tps++;
+                physicsTick();
+                //oblicznie czasu kolejnego tick'a
+                nextTick += dt;
+                //sprawdzanie różnicy między teraz i nextTick
+                while(PhysicsTimer.ElapsedTicks - nextTick > skippedTicksPackage * dt)
+                {
+                    //pomijanie pakietu tick'ow
+                    nextTick += skippedTicksPackage * dt;
+                    skippedTicksCount += skippedTicksPackage;
+                }
+                //tps
+                if(PhysicsTimer.ElapsedTicks > nextTpsCount)
+                {
+                    nextTpsCount += Stopwatch.Frequency;
+                    this.tps = tps;
+                    tps = 0;
                 }
             }
         }
 
+        public void physicsTick()
+        {
+            for (int i = 0; i < particles.Length; i++)
+                particles[i].updateparticle(dt, particles,box,i);
+        }
+
         private void button1_Click(object sender, EventArgs e)
         {
+            AutoSize = false;
+            Size = defaultFormSize;
             Random rng = new Random(); //UTWORZENIE SEEDA RNG
-
+            box.Width = Convert.ToInt32(numericUpDown3.Value) * defaultRadius;
+            box.Height = Convert.ToInt32(numericUpDown4.Value) * defaultRadius;
             pictureBox1.Size=box;
+            AutoSize = true;
             if (physicsThread != null)
             {
                 physicsThread.Abort();
@@ -169,12 +215,13 @@ namespace Fizyka_smietnik
             int maxvel = 100;
             numberofparticles = Convert.ToInt32(numericUpDown1.Value);
             maxvel =  Convert.ToInt32(numericUpDown2.Value);
-           
-                        //UTWORZENIE TABLICY CZASTEK
+            dt = Stopwatch.Frequency / (K * maxvel);
+
+            //UTWORZENIE TABLICY CZASTEK
 
             particles = new Particle[numberofparticles];
             for (int i = 0; i < numberofparticles; i++)
-                particles[i] = new Particle(10, box.Width , pictureBox1.Height, maxvel , rng);
+                particles[i] = new Particle(defaultRadius, box.Width , pictureBox1.Height, maxvel , rng);
 
                 //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
 
@@ -220,14 +267,38 @@ namespace Fizyka_smietnik
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if (debugFPS) debugFPS = false;
-            else debugFPS = true;
+            if (debugFPS)
+            {
+                debugFPS = false;
+                label5.Visible = false;
+                label6.Visible = false;
+            }
+            else
+            {
+                debugFPS = true;
+                label5.Visible = true;
+                label6.Visible = true;
+            }
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
             if (debuginfo) debuginfo = false;
             else debuginfo = true;
+        }
+
+        private void changedL(object sender, EventArgs e)
+        {
+            // 5L <= H
+            while (5*Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
+                numericUpDown4.Value+= 5 * Convert.ToInt32(numericUpDown3.Value)-Convert.ToInt32(numericUpDown4.Value); 
+        }
+
+        private void changeH(object sender, EventArgs e)
+        {
+            // H >= 5L
+            while (5 * Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
+                numericUpDown3.Value-= 5 * Convert.ToInt32(numericUpDown3.Value) - Convert.ToInt32(numericUpDown4.Value);
         }
     }
 
@@ -257,8 +328,8 @@ namespace Fizyka_smietnik
         public Particle( int radius, int width, int height, int maxvel, Random rng)          //LOSOWE UTWORZENIE czastki
         {
             Radius = radius;
-            X = 10 + rng.Next() % (width - radius - 1);
-            Y = 10 + rng.Next() % (height - radius - 1);
+            X = Radius + rng.Next() % (width - 2*Radius - 1);
+            Y = Radius + rng.Next() % (height - 2*Radius - 1);
             if (maxvel == 0)
             {
                 velX = 0;
@@ -275,13 +346,14 @@ namespace Fizyka_smietnik
                 velY = -rng.Next() % (maxvel);
         }
 
-        public void updateparticle(long ticks , Particle[] particles, int currentIndex)
+        public void updateparticle(long ticks , Particle[] particles, Size box, int currentIndex)
         {
             X += ((double)ticks / Stopwatch.Frequency) * velX;
             Y += ((double)ticks / Stopwatch.Frequency) * velY;
             velY += ((double)ticks / Stopwatch.Frequency) * 1000;
-            bordercollision();
+            bordercollision(box);
             multipleparticlescollisions(particles, currentIndex);
+
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -342,14 +414,14 @@ namespace Fizyka_smietnik
             else
                 return true;
         }
-        public void bordercollision()
+        public void bordercollision(Size box)
         {
             if (X < Radius && velX < 0)
-                velX = -velX;
-            if (X > 574 - Radius - 1 && velX>0)
-                velX = -velX;
-            if (Y > 384- Radius-1 && velY > 0)
-                velY = (-velY);
+                velX = -velX*0.7;
+            if (X > box.Width - Radius - 1 && velX>0)
+                velX = -velX*0.7;
+            if (Y > box.Height- Radius-1 && velY > 0)
+                velY = (-velY)*0.85;
             if (Y < Radius && velY < 0)
                 velY = (-velY);
         }
