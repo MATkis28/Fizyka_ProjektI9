@@ -416,11 +416,11 @@ namespace Fizyka_smietnik
         public void bordercollision(Size box)
         {
             if (X < Radius && velX < 0)
-                velX = -velX*0.7;
+                velX = -velX;
             if (X > box.Width - Radius - 1 && velX>0)
-                velX = -velX*0.7;
+                velX = -velX;
             if (Y > box.Height- Radius-1 && velY > 0)
-                velY = (-velY)*0.85;
+                velY = (-velY);
             if (Y < Radius && velY < 0)
                 velY = (-velY);
         }
