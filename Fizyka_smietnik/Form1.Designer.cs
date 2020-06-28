@@ -172,6 +172,7 @@
             0,
             0});
             this.numericUpDown3.ValueChanged += new System.EventHandler(this.changedL);
+            this.numericUpDown3.Leave += new System.EventHandler(this.changedL);
             // 
             // label3
             // 
@@ -213,6 +214,7 @@
             0,
             0});
             this.numericUpDown4.ValueChanged += new System.EventHandler(this.changeH);
+            this.numericUpDown4.Leave += new System.EventHandler(this.changeH);
             // 
             // label5
             // 
