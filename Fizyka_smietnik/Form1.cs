@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Diagnostics;
-using System.Drawing.Drawing2D;
 using System.Runtime.CompilerServices;
 
 namespace Fizyka_smietnik
@@ -17,34 +11,36 @@ namespace Fizyka_smietnik
     {
         Thread drawThread;
         Thread physicsThread;
-
-        public bool drawingRunning = false;
-        public bool physicsRuning = false;
-        public bool physicsPause = false;
-
-        public bool debugFPS = false;
-        public bool debuginfo = false;
-
-        public int numberofparticles = 5;
-        public int maxvel = 100;
-        public int nh;
-        public int nl;
-        public int K = 1;
-        public long dt;
-        public long fps = 0;
-        public int tps = 0;
-        public long ticksCount = 0;
-        public long skippedTicksCount = 0;
-        
-        public int defaultRadius = 6;
-        Size defaultFormSize;
-        Size box = new Size(574, 384);
-
-        Font drawFont = new Font("Arial", 8);
-
-        SolidBrush blackBrush = new SolidBrush(Color.Black);
-
         Particle[] particles;
+
+        //symulacja
+        private int nh;
+        private int nl;
+        private int numberofparticles = 5;
+        private const int defaultRadius = 6;
+        private int maxVel = 100;
+        private int K = 1;
+        private const long g = 1000;
+        private long dt;
+
+        //stany
+        private bool drawingRunning = false;
+        private bool physicsRuning = false;
+        private bool physicsPause = false;
+
+        //debug info
+        private bool debugFPS = false;
+        private bool debuginfo = false;
+        private int fps = 0;
+        private int tps = 0;
+        private long ticksCount = 0;
+        private long skippedTicksCount = 0;
+
+        //okno
+        private Size defaultFormSize;
+        private Size box = new Size(574, 384);
+        private Font drawFont = new Font("Arial", 8);
+        private SolidBrush blackBrush = new SolidBrush(Color.Black);
 
         public Form1()
         {
@@ -52,8 +48,7 @@ namespace Fizyka_smietnik
             defaultFormSize = Size;
         }
 
-            //NARYSOWANIE GRANIC
-        public void drawBorders(Graphics drawing)
+        private void drawBorders(Graphics drawing)
         {
             Pen borderPen = new Pen(Color.Black);
             drawing.DrawLine(borderPen, 0, 0, box.Width - 1, 0);
@@ -62,7 +57,7 @@ namespace Fizyka_smietnik
             drawing.DrawLine(borderPen, box.Width - 1, 0, box.Width - 1, box.Height - 1);
         }
 
-        public void drawParticles(Graphics drawing)
+        private void drawParticles(Graphics drawing)
         {
             SolidBrush particleBrush = new SolidBrush(Color.Black);
             Pen blackPen = new Pen(Color.Black);
@@ -75,9 +70,7 @@ namespace Fizyka_smietnik
             }
         }
 
-            //NARYSOWANIE CALEJ KLATKI NA OKNIE APLIKACJI
-
-        public void drawFrame(Graphics drawing ,Bitmap bmg)
+        private void drawFrame(Graphics drawing ,Bitmap bmg)
         {
             Rectangle box = new Rectangle(0, 0, bmg.Width, bmg.Height);
             if (drawingRunning)
@@ -98,7 +91,7 @@ namespace Fizyka_smietnik
             drawing.Clear(Color.White);
         }
 
-        public void showFPS(Graphics drawing)
+        private void showFPS(Graphics drawing)
         {
             label5.Invoke(new MethodInvoker(
                          delegate ()
@@ -113,12 +106,7 @@ namespace Fizyka_smietnik
             //drawing.DrawString(("FPS: " + fps.ToString()), drawFont, blackBrush, 5 , 5);
         }
 
-        public void showTPS(Graphics drawing)
-        {
-            drawing.DrawString(("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + " Simulation time: " + (1000*ticksCount*dt/Stopwatch.Frequency).ToString() + "ms Ticks: " + ticksCount.ToString() + " Skipped ticks: " + skippedTicksCount.ToString()), drawFont, blackBrush, 5, 15);
-        }
-
-        public void showParticleInfo (Graphics drawing)
+        private void showParticleInfo (Graphics drawing)
         {
             for (int i = 0; i < particles.Length && i < 30; i++)
                 drawing.DrawString(i.ToString() + ") X: " + particles[i].X.ToString() + " Y: " + particles[i].Y.ToString() + " VelX: " + particles[i].velX.ToString() + " VelY: " + particles[i].velY.ToString(), drawFont , blackBrush, 100 , 10 + 10*(i + 2));
@@ -135,12 +123,11 @@ namespace Fizyka_smietnik
                 drawWatch.Restart();
                 drawFrame(SimDrawing , bmg);
                 if (debugFPS) showFPS(SimDrawing);
-                //if (debugFPS) showTPS(SimDrawing);
                 if (debuginfo) showParticleInfo(SimDrawing);
                 drawParticles(SimDrawing);
                 drawBorders(SimDrawing);
                 drawWatch.Stop();
-                fps = Stopwatch.Frequency/ drawWatch.ElapsedTicks;
+                fps = (int)(Stopwatch.Frequency/ drawWatch.ElapsedTicks);
             }
         }
 
@@ -179,7 +166,7 @@ namespace Fizyka_smietnik
                     nextTick += skippedTicksPackage * dt;
                     skippedTicksCount += skippedTicksPackage;
                 }
-                //tps
+                //liczenie tps
                 if(PhysicsTimer.ElapsedTicks > nextTpsCount)
                 {
                     nextTpsCount += Stopwatch.Frequency;
@@ -189,12 +176,13 @@ namespace Fizyka_smietnik
             }
         }
 
-        public void physicsTick()
+        private void physicsTick()
         {
             for (int i = 0; i < particles.Length; i++)
-                particles[i].updateparticle(dt, particles,box,i);
+                particles[i].updateparticle(particles, i);
         }
 
+        //tworzenie symulacji
         private void button1_Click(object sender, EventArgs e)
         {
             AutoSize = false;
@@ -204,10 +192,7 @@ namespace Fizyka_smietnik
             nl = Convert.ToInt32(numericUpDown3.Value);
             box.Width = nl * defaultRadius;
             box.Height = nh * defaultRadius;
-            if (nl < nh)
-                K = nl;
-            else
-                K = nh;
+            K = nl; //K = (nl < nh) ? nl : nh; 
             pictureBox1.Size=box;
             AutoSize = true;
             if (physicsThread != null)
@@ -228,31 +213,36 @@ namespace Fizyka_smietnik
                 numberofparticles = nh * nl / 4;
                 numericUpDown1.Value = numberofparticles;
             }
-            maxvel =  Convert.ToInt32(numericUpDown2.Value);
-            dt = Stopwatch.Frequency / (K * maxvel);
+            maxVel =  Convert.ToInt32(numericUpDown2.Value);
+            dt = Stopwatch.Frequency / (K * maxVel);
 
             //UTWORZENIE TABLICY CZASTEK
-
+            double dts = (double)dt / Stopwatch.Frequency;
             particles = new Particle[numberofparticles];
             for (int i = 0; i < numberofparticles; i++)
-                particles[i] = new Particle(defaultRadius, box.Width , pictureBox1.Height, maxvel , rng);
+                particles[i] = new Particle(defaultRadius, dts, g, box, maxVel, rng);
 
-                //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
+            //RESETOWANIE TPS
+            fps = 0;
+            tps = 0;
+            ticksCount = 0;
+            skippedTicksCount = 0;
 
-                drawingRunning = true;
-                drawThread = new Thread(draw);
-                drawThread.Start();
+            //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
+            drawingRunning = true;
+            drawThread = new Thread(draw);
+            drawThread.Start();
 
-                physicsRuning = true;
-                physicsPause = true;
-                button2.Text = "Physics Paused";
-                physicsThread = new Thread(physics);
-                physicsThread.Start();
-                physicsRuning = true;
+            physicsRuning = true;
+            physicsPause = true;
+            button2.Text = "Physics Paused";
+            physicsThread = new Thread(physics);
+            physicsThread.Start();
+            physicsRuning = true;
             System.Threading.Thread.Sleep(1000);
         }
 
-                        // PAUZOWANIE FIZYKI
+        // pauzowanie fizyki
         private void button2_Click(object sender, EventArgs e)
         {
             if (physicsRuning)
@@ -270,15 +260,7 @@ namespace Fizyka_smietnik
             }
         }
 
-                    // ZAKONCZENIE WATKOW PRZED ZAMKNIECIEM OKNA
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            if (drawThread!=null)
-            drawThread.Abort();
-            if (physicsThread!=null)
-            physicsThread.Abort();
-        }
-
+        //show fps
         private void button3_Click(object sender, EventArgs e)
         {
             if (debugFPS)
@@ -295,10 +277,20 @@ namespace Fizyka_smietnik
             }
         }
 
+        //debuginfo
         private void button4_Click(object sender, EventArgs e)
         {
             if (debuginfo) debuginfo = false;
             else debuginfo = true;
+        }
+
+        // zakonczenie watkow przed zamknieciem okna
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (drawThread != null)
+                drawThread.Abort();
+            if (physicsThread != null)
+                physicsThread.Abort();
         }
 
         private void changedL(object sender, EventArgs e)
@@ -319,55 +311,61 @@ namespace Fizyka_smietnik
     public class Particle
     {
         //stałe
-        public static double d = 1.05 * 1.05;
-
-        geometry geomath = new geometry();
+        private const double d = 1.05 * 1.05;
 
         public double X;
         public double Y;
-        public int Radius;
         public double velX;
         public double velY;
+        public int Radius;
+        public double dts;
+        public long g;
+        public Size box;
         public Color color = Color.Transparent;
 
-        public Particle(int x, int y, int radius, int velx = 0, int vely = 0)
+        public Particle(int X, int Y, int Radius, double dts, long g, Size box, int velX = 0, int velY = 0)
         {
-            X = x;
-            Y = y;
-            Radius = radius;
-            velX = velx;
-            velY = vely;
+            this.X = X;
+            this.Y = Y;
+            this.Radius = Radius;
+            this.velX = velX;
+            this.velY = velY;
+            this.dts = dts;
+            this.g = g;
+            this.box = box;
         }
 
-        public Particle( int radius, int width, int height, int maxvel, Random rng)          //LOSOWE UTWORZENIE czastki
+        public Particle(int Radius, double dts, long g, Size box, int maxVel, Random rng)          //LOSOWE UTWORZENIE czastki
         {
-            Radius = radius;
-            X = Radius + rng.Next() % (width - 2*Radius - 1);
-            Y = Radius + rng.Next() % (height - 2*Radius - 1);
-            if (maxvel == 0)
+            this.Radius = Radius;
+            this.dts = dts;
+            this.g = g;
+            this.box = box;
+            X = Radius + rng.Next() % (box.Width - 2*Radius - 1);
+            Y = Radius + rng.Next() % (box.Height - 2*Radius - 1);
+            if (maxVel == 0)
             {
                 velX = 0;
                 velY = 0;
                 return;
             }
             if ((1 + rng.Next()) % 2 == 1)
-                velX = rng.Next() % (maxvel);
+                velX = rng.Next() % (maxVel);
             else
-                velX = -rng.Next() % (maxvel);
+                velX = -rng.Next() % (maxVel);
             if ((1 + rng.Next()) % 2 == 1)
-                velY = rng.Next() % (maxvel);
+                velY = rng.Next() % (maxVel);
             else
-                velY = -rng.Next() % (maxvel);
+                velY = -rng.Next() % (maxVel);
         }
 
-        public void updateparticle(long ticks , Particle[] particles, Size box, int currentIndex)
+        public void updateparticle(Particle[] particles, int currentIndex)
         {
-            X += ((double)ticks / Stopwatch.Frequency) * velX;
-            Y += ((double)ticks / Stopwatch.Frequency) * velY;
-            velY += ((double)ticks / Stopwatch.Frequency) * 1000;
-            bordercollision(box);
+            X += dts * velX;
+            Y += dts * velY;
+            velY += dts * g;
+            bordercollision();
             multipleparticlescollisions(particles, currentIndex);
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -378,7 +376,7 @@ namespace Fizyka_smietnik
                 double dx = X - secondparticle.X;
                 double dy = Y - secondparticle.Y;
                 if (dy * dy + dx * dx <= (Radius + secondparticle.Radius) * (Radius + secondparticle.Radius) * d) 
-                //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
+                //if (geometry.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
                 {
                     color = Color.Red;
                     return true;
@@ -407,7 +405,7 @@ namespace Fizyka_smietnik
                      double dx = X - particles[i].X;
                      double dy = Y - particles[i].Y;
                      if (dy * dy + dx * dx <= (Radius + particles[i].Radius) * (Radius + particles[i].Radius))
-                     //if (geomath.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
+                     //if (geometry.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
                      {
                          color = Color.Red;
                          touched = true;
@@ -428,7 +426,7 @@ namespace Fizyka_smietnik
             else
                 return true;
         }
-        public void bordercollision(Size box)
+        public void bordercollision()
         {
             if (X < Radius && velX < 0)
                 velX = -velX;
@@ -523,8 +521,7 @@ namespace Fizyka_smietnik
 
     public class geometry
     {
-        public geometry() { }
-        public double distance(double x1 ,double y1 ,double x2, double y2)
+        public static double distance(double x1 ,double y1 ,double x2, double y2)
         {
             double dx = x1 - x2;
             double dy = y1 - y2;
@@ -532,7 +529,7 @@ namespace Fizyka_smietnik
             if (dy < 0) dy = -dy;
             return (double)Math.Sqrt((dy * dy + dx * dx));
         }
-        public double distance_nosqrt(double x1, double y1, double x2, double y2)
+        public static double distance_nosqrt(double x1, double y1, double x2, double y2)
         {
             double dx = x1 - x2;
             double dy = y1 - y2;
