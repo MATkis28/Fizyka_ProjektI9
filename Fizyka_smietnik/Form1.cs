@@ -25,8 +25,8 @@ namespace Fizyka_smietnik
         public bool debugFPS = false;
         public bool debuginfo = false;
 
-
-        public const int maxvel = 100;
+        public int numberofparticles = 5;
+        public int maxvel = 100;
         public const int K = 1;
         public long dt = Stopwatch.Frequency / (K* maxvel);
         public long fps = 0;
@@ -34,7 +34,7 @@ namespace Fizyka_smietnik
         public long ticksCount = 0;
         public long skippedTicksCount = 0;
         
-        public int defaultRadius = 4;
+        public int defaultRadius = 6;
         Size defaultFormSize;
         Size box = new Size(574, 384);
 
@@ -211,8 +211,7 @@ namespace Fizyka_smietnik
                 drawThread.Abort();
             }
 
-            int numberofparticles = 5;          //WCZYTANIE WARTOSCI Z OKNA
-            int maxvel = 100;
+                     //WCZYTANIE WARTOSCI Z OKNA
             numberofparticles = Convert.ToInt32(numericUpDown1.Value);
             maxvel =  Convert.ToInt32(numericUpDown2.Value);
             dt = Stopwatch.Frequency / (K * maxvel);
