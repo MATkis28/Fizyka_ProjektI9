@@ -12,16 +12,18 @@ namespace Fizyka_smietnik
         Thread drawThread;
         Thread physicsThread;
         Particle[] particles;
+        Detector detector;// = new Detector(300,500); //TODO: jakoś to trzeba zrobić żeby można było zmieniać te wartosci w UI i może narysowac ten detektor jakos
 
         //symulacja
         private int nh;
         private int nl;
         private int numberofparticles = 5;
-        private const int defaultRadius = 6;
+        private int defaultRadius = 3;
         private int maxVel = 100;
         private int K = 1;
-        private const long g = 1000;
+        private long g = 1000;
         private long dt;
+        private int M = 5000; //liczba ticków co które oblicza sie ciśnienie
 
         //stany
         private bool drawingRunning = false;
@@ -46,6 +48,24 @@ namespace Fizyka_smietnik
         {
             InitializeComponent();
             defaultFormSize = Size;
+        }
+
+        private void drawDetector(Graphics drawing)
+        {
+            Pen borderPen = new Pen(Color.Red);
+            drawing.DrawLine(borderPen, box.Width - 1, (float)detector.end, box.Width - 1, (float)detector.begin);
+            drawing.DrawLine(borderPen, box.Width - 2, (float)detector.end, box.Width - 2, (float)detector.begin);
+            if (textBox1.InvokeRequired)         //NIE MAM POJECIA DLACZEGO ALE MUSIALEM TO W TEN SPOSOB ZROBIC
+            {
+                pictureBox1.Invoke(new MethodInvoker(
+                     delegate ()
+                     {
+                         textBox1.Text = detector.p.ToString();
+                     }));
+            }
+            else
+                textBox1.Text = detector.p.ToString();
+
         }
 
         private void drawBorders(Graphics drawing)
@@ -101,7 +121,7 @@ namespace Fizyka_smietnik
             label6.Invoke(new MethodInvoker(
                          delegate ()
                          {
-                             label6.Text = (("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + "\nSimulation time: " + (1000 * ticksCount * dt / Stopwatch.Frequency).ToString() + "ms \nTicks: " + ticksCount.ToString() + "\nSkipped ticks: " + skippedTicksCount.ToString()));
+                             label6.Text = (("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + "\nSpeed: " + (tps/1.0 / Stopwatch.Frequency * dt).ToString() + "X" + "\nSimulation time: " + (1000 * ticksCount * dt / Stopwatch.Frequency).ToString() + "ms \nTicks: " + ticksCount.ToString() + "\nSkipped ticks: " + skippedTicksCount.ToString()));
                          }));
             //drawing.DrawString(("FPS: " + fps.ToString()), drawFont, blackBrush, 5 , 5);
         }
@@ -121,11 +141,12 @@ namespace Fizyka_smietnik
             while (drawingRunning)
             {
                 drawWatch.Restart();
-                drawFrame(SimDrawing , bmg);
                 if (debugFPS) showFPS(SimDrawing);
                 if (debuginfo) showParticleInfo(SimDrawing);
                 drawParticles(SimDrawing);
                 drawBorders(SimDrawing);
+                drawDetector(SimDrawing);
+                drawFrame(SimDrawing, bmg);
                 drawWatch.Stop();
                 fps = (int)(Stopwatch.Frequency/ drawWatch.ElapsedTicks);
             }
@@ -138,6 +159,7 @@ namespace Fizyka_smietnik
             int skippedTicksPackage = 10;
             long nextTpsCount = Stopwatch.Frequency;
             int tps = 0;
+            int m = 0;
 
             PhysicsTimer.Start();
             while (physicsRuning && particles != null)
@@ -156,7 +178,14 @@ namespace Fizyka_smietnik
                 //tick
                 ticksCount++;
                 tps++;
+                m++;
                 physicsTick();
+                //liczenie ciśnienia
+                if (m==M)
+                {
+                    detector.calculatePressure(M * dt);
+                    m = 0;
+                }
                 //oblicznie czasu kolejnego tick'a
                 nextTick += dt;
                 //sprawdzanie różnicy między teraz i nextTick
@@ -179,23 +208,24 @@ namespace Fizyka_smietnik
         private void physicsTick()
         {
             for (int i = 0; i < particles.Length; i++)
-                particles[i].updateparticle(particles, i);
+                particles[i].updateparticle(particles, detector, i);
         }
 
         //tworzenie symulacji
         private void button1_Click(object sender, EventArgs e)
         {
+            defaultRadius = Convert.ToInt32(numericUpDown7.Value);
             AutoSize = false;
             Size = defaultFormSize;
             Random rng = new Random(); //UTWORZENIE SEEDA RNG
-            nh = Convert.ToInt32(numericUpDown4.Value);
+            nh = Convert.ToInt32(numericUpDown4.Value); //POBRANIE ROZMAIRU OKNA
             nl = Convert.ToInt32(numericUpDown3.Value);
             box.Width = nl * defaultRadius;
             box.Height = nh * defaultRadius;
             K = nl; //K = (nl < nh) ? nl : nh; 
             pictureBox1.Size=box;
             AutoSize = true;
-            if (physicsThread != null)
+            if (physicsThread != null)      //WYLACZENIE POPRZEDNICH SYMULACJI
             {
                 physicsThread.Abort();
             }
@@ -206,6 +236,11 @@ namespace Fizyka_smietnik
             ticksCount = 0;
             skippedTicksCount = 0;
 
+            //UTWORZENIE DETEKTORA
+            double h = Convert.ToInt32(numericUpDown5.Value);
+            double lambda = Convert.ToInt32(numericUpDown6.Value);
+            detector = new Detector(box.Height -(h*defaultRadius) -(lambda*defaultRadius), box.Height- (h * defaultRadius));
+
             //WCZYTANIE WARTOSCI Z OKNA
             numberofparticles = Convert.ToInt32(numericUpDown1.Value);
             if (4 * numberofparticles > nh * nl)
@@ -215,6 +250,7 @@ namespace Fizyka_smietnik
             }
             maxVel =  Convert.ToInt32(numericUpDown2.Value);
             dt = Stopwatch.Frequency / (K * maxVel);
+            g = Convert.ToInt32(numericUpDown8.Value);
 
             //UTWORZENIE TABLICY CZASTEK
             double dts = (double)dt / Stopwatch.Frequency;
@@ -266,14 +302,12 @@ namespace Fizyka_smietnik
             if (debugFPS)
             {
                 debugFPS = false;
-                label5.Visible = false;
-                label6.Visible = false;
+                label5.Text = "";
+                label6.Text = "";
             }
             else
             {
                 debugFPS = true;
-                label5.Visible = true;
-                label6.Visible = true;
             }
         }
 
@@ -297,7 +331,9 @@ namespace Fizyka_smietnik
         {
             // 5L <= H
             while (5*Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
-                numericUpDown4.Value= 5 * Convert.ToInt32(numericUpDown3.Value); 
+                numericUpDown4.Value= 5 * Convert.ToInt32(numericUpDown3.Value);
+            changedh(sender, e);
+            changedlambda(sender, e);
         }
 
         private void changeH(object sender, EventArgs e)
@@ -305,6 +341,46 @@ namespace Fizyka_smietnik
             // H >= 5L
             while (5 * Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
                 numericUpDown3.Value= Convert.ToInt32(numericUpDown4.Value)/5;
+            changedh(sender, e);
+            changedlambda(sender, e);
+        }
+
+        private void changedlambda(object sender, EventArgs e)
+        {
+            if (numericUpDown6.Value + numericUpDown5.Value > numericUpDown4.Value)
+                numericUpDown6.Value = numericUpDown4.Value - numericUpDown5.Value;
+        }
+
+        private void changedh(object sender, EventArgs e)
+        {
+            if (numericUpDown5.Value != 0)
+            {
+                if (numericUpDown6.Value + numericUpDown5.Value > numericUpDown4.Value)
+                    numericUpDown5.Value = numericUpDown4.Value - numericUpDown6.Value;
+            }
+        }
+    }
+
+    public class Detector
+    {
+        public double begin;
+        public double end;
+        public double p;
+
+        private double suma_p = 0;
+
+        public Detector(double begin, double end)
+        {
+            this.begin = begin;
+            this.end = end;
+        }
+
+        public void detect(double vel) { suma_p += 2 * vel; }
+
+        public void calculatePressure(double delta_t)
+        {
+            p = suma_p / (delta_t * (end - begin));
+            suma_p = 0;
         }
     }
 
@@ -359,12 +435,12 @@ namespace Fizyka_smietnik
                 velY = -rng.Next() % (maxVel);
         }
 
-        public void updateparticle(Particle[] particles, int currentIndex)
+        public void updateparticle(Particle[] particles, Detector detector, int currentIndex)
         {
             X += dts * velX;
             Y += dts * velY;
             velY += dts * g;
-            bordercollision();
+            bordercollision(detector);
             multipleparticlescollisions(particles, currentIndex);
         }
 
@@ -426,13 +502,18 @@ namespace Fizyka_smietnik
             else
                 return true;
         }
-        public void bordercollision()
+        //TODO: wywołac funkcje detekcji
+        public void bordercollision(Detector detector)
         {
             if (X < Radius && velX < 0)
                 velX = -velX;
-            if (X > box.Width - Radius - 1 && velX>0)
+            if (X > box.Width - Radius - 1 && velX > 0)
+            {
+                if (Y > detector.begin && Y < detector.end)
+                    detector.detect(velX);
                 velX = -velX;
-            if (Y > box.Height- Radius-1 && velY > 0)
+            }
+            if (Y > box.Height - Radius - 1 && velY > 0)
                 velY = (-velY);
             if (Y < Radius && velY < 0)
                 velY = (-velY);
@@ -537,6 +618,5 @@ namespace Fizyka_smietnik
             if (dy < 0) dy = -dy;
             return (dy * dy + dx * dx);
         }
-
     }
 }
