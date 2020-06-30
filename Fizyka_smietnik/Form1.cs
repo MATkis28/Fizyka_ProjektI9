@@ -18,7 +18,7 @@ namespace Fizyka_smietnik
         private int nh;
         private int nl;
         private int numberofparticles = 5;
-        private const int defaultRadius = 6;
+        private int defaultRadius = 3;
         private int maxVel = 100;
         private int K = 1;
         private const long g = 1000;
@@ -214,6 +214,7 @@ namespace Fizyka_smietnik
         //tworzenie symulacji
         private void button1_Click(object sender, EventArgs e)
         {
+            defaultRadius = Convert.ToInt32(numericUpDown7.Value);
             AutoSize = false;
             Size = defaultFormSize;
             Random rng = new Random(); //UTWORZENIE SEEDA RNG
@@ -224,7 +225,7 @@ namespace Fizyka_smietnik
             K = nl; //K = (nl < nh) ? nl : nh; 
             pictureBox1.Size=box;
             AutoSize = true;
-            if (physicsThread != null)
+            if (physicsThread != null)      //WYLACZENIE POPRZEDNICH SYMULACJI
             {
                 physicsThread.Abort();
             }
@@ -249,6 +250,7 @@ namespace Fizyka_smietnik
             }
             maxVel =  Convert.ToInt32(numericUpDown2.Value);
             dt = Stopwatch.Frequency / (K * maxVel);
+            g = Convert.ToInt32(numericUpDown8.Value);
 
             //UTWORZENIE TABLICY CZASTEK
             double dts = (double)dt / Stopwatch.Frequency;
@@ -300,14 +302,12 @@ namespace Fizyka_smietnik
             if (debugFPS)
             {
                 debugFPS = false;
-                label5.Visible = false;
-                label6.Visible = false;
+                label5.Text = "";
+                label6.Text = "";
             }
             else
             {
                 debugFPS = true;
-                label5.Visible = true;
-                label6.Visible = true;
             }
         }
 
