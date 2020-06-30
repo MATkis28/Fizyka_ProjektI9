@@ -12,6 +12,7 @@ namespace Fizyka_smietnik
         Thread drawThread;
         Thread physicsThread;
         Particle[] particles;
+        Detector detector = new Detector(300,500); //TODO: jakoś to trzeba zrobić żeby można było zmieniać te wartosci w UI i może narysowac ten detektor jakos
 
         //symulacja
         private int nh;
@@ -22,6 +23,7 @@ namespace Fizyka_smietnik
         private int K = 1;
         private const long g = 1000;
         private long dt;
+        private int M = 5000; //liczba ticków co które oblicza sie ciśnienie
 
         //stany
         private bool drawingRunning = false;
@@ -138,6 +140,7 @@ namespace Fizyka_smietnik
             int skippedTicksPackage = 10;
             long nextTpsCount = Stopwatch.Frequency;
             int tps = 0;
+            int m = 0;
 
             PhysicsTimer.Start();
             while (physicsRuning && particles != null)
@@ -156,7 +159,14 @@ namespace Fizyka_smietnik
                 //tick
                 ticksCount++;
                 tps++;
+                m++;
                 physicsTick();
+                //liczenie ciśnienia
+                if (m==M)
+                {
+                    detector.calculatePressure(M * dt);
+                    m = 0;
+                }
                 //oblicznie czasu kolejnego tick'a
                 nextTick += dt;
                 //sprawdzanie różnicy między teraz i nextTick
@@ -179,7 +189,7 @@ namespace Fizyka_smietnik
         private void physicsTick()
         {
             for (int i = 0; i < particles.Length; i++)
-                particles[i].updateparticle(particles, i);
+                particles[i].updateparticle(particles, detector, i);
         }
 
         //tworzenie symulacji
@@ -308,6 +318,29 @@ namespace Fizyka_smietnik
         }
     }
 
+    public class Detector
+    {
+        public double begin;
+        public double end;
+        public double p;
+
+        private double suma_p = 0;
+
+        public Detector(double begin, double end)
+        {
+            this.begin = begin;
+            this.end = end;
+        }
+
+        public void detect(double vel) { suma_p += 2 * vel; }
+
+        public void calculatePressure(double delta_t)
+        {
+            p = suma_p / (delta_t * (end - begin));
+            suma_p = 0;
+        }
+    }
+
     public class Particle
     {
         //stałe
@@ -359,12 +392,12 @@ namespace Fizyka_smietnik
                 velY = -rng.Next() % (maxVel);
         }
 
-        public void updateparticle(Particle[] particles, int currentIndex)
+        public void updateparticle(Particle[] particles, Detector detector, int currentIndex)
         {
             X += dts * velX;
             Y += dts * velY;
             velY += dts * g;
-            bordercollision();
+            bordercollision(detector);
             multipleparticlescollisions(particles, currentIndex);
         }
 
@@ -426,13 +459,18 @@ namespace Fizyka_smietnik
             else
                 return true;
         }
-        public void bordercollision()
+        //TODO: wywołac funkcje detekcji
+        public void bordercollision(Detector detector)
         {
             if (X < Radius && velX < 0)
                 velX = -velX;
-            if (X > box.Width - Radius - 1 && velX>0)
+            if (X > box.Width - Radius - 1 && velX > 0)
+            {
+                if (Y > detector.begin && Y < detector.end)
+                    detector.detect(velX);
                 velX = -velX;
-            if (Y > box.Height- Radius-1 && velY > 0)
+            }
+            if (Y > box.Height - Radius - 1 && velY > 0)
                 velY = (-velY);
             if (Y < Radius && velY < 0)
                 velY = (-velY);
