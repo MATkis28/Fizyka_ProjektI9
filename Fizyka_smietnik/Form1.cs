@@ -12,7 +12,7 @@ namespace Fizyka_smietnik
         Thread drawThread;
         Thread physicsThread;
         Particle[] particles;
-        Detector detector = new Detector(300,500); //TODO: jakoś to trzeba zrobić żeby można było zmieniać te wartosci w UI i może narysowac ten detektor jakos
+        Detector detector;// = new Detector(300,500); //TODO: jakoś to trzeba zrobić żeby można było zmieniać te wartosci w UI i może narysowac ten detektor jakos
 
         //symulacja
         private int nh;
@@ -48,6 +48,24 @@ namespace Fizyka_smietnik
         {
             InitializeComponent();
             defaultFormSize = Size;
+        }
+
+        private void drawDetector(Graphics drawing)
+        {
+            Pen borderPen = new Pen(Color.Red);
+            drawing.DrawLine(borderPen, box.Width - 1, (float)detector.end, box.Width - 1, (float)detector.begin);
+            drawing.DrawLine(borderPen, box.Width - 2, (float)detector.end, box.Width - 2, (float)detector.begin);
+            if (textBox1.InvokeRequired)         //NIE MAM POJECIA DLACZEGO ALE MUSIALEM TO W TEN SPOSOB ZROBIC
+            {
+                pictureBox1.Invoke(new MethodInvoker(
+                     delegate ()
+                     {
+                         textBox1.Text = detector.p.ToString();
+                     }));
+            }
+            else
+                textBox1.Text = detector.p.ToString();
+
         }
 
         private void drawBorders(Graphics drawing)
@@ -123,11 +141,12 @@ namespace Fizyka_smietnik
             while (drawingRunning)
             {
                 drawWatch.Restart();
-                drawFrame(SimDrawing , bmg);
                 if (debugFPS) showFPS(SimDrawing);
                 if (debuginfo) showParticleInfo(SimDrawing);
                 drawParticles(SimDrawing);
                 drawBorders(SimDrawing);
+                drawDetector(SimDrawing);
+                drawFrame(SimDrawing, bmg);
                 drawWatch.Stop();
                 fps = (int)(Stopwatch.Frequency/ drawWatch.ElapsedTicks);
             }
@@ -198,7 +217,7 @@ namespace Fizyka_smietnik
             AutoSize = false;
             Size = defaultFormSize;
             Random rng = new Random(); //UTWORZENIE SEEDA RNG
-            nh = Convert.ToInt32(numericUpDown4.Value);
+            nh = Convert.ToInt32(numericUpDown4.Value); //POBRANIE ROZMAIRU OKNA
             nl = Convert.ToInt32(numericUpDown3.Value);
             box.Width = nl * defaultRadius;
             box.Height = nh * defaultRadius;
@@ -215,6 +234,11 @@ namespace Fizyka_smietnik
             }
             ticksCount = 0;
             skippedTicksCount = 0;
+
+            //UTWORZENIE DETEKTORA
+            double h = Convert.ToInt32(numericUpDown5.Value);
+            double lambda = Convert.ToInt32(numericUpDown6.Value);
+            detector = new Detector(box.Height -(h*defaultRadius) -(lambda*defaultRadius), box.Height- (h * defaultRadius));
 
             //WCZYTANIE WARTOSCI Z OKNA
             numberofparticles = Convert.ToInt32(numericUpDown1.Value);
@@ -307,7 +331,9 @@ namespace Fizyka_smietnik
         {
             // 5L <= H
             while (5*Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
-                numericUpDown4.Value= 5 * Convert.ToInt32(numericUpDown3.Value); 
+                numericUpDown4.Value= 5 * Convert.ToInt32(numericUpDown3.Value);
+            changedh(sender, e);
+            changedlambda(sender, e);
         }
 
         private void changeH(object sender, EventArgs e)
@@ -315,6 +341,23 @@ namespace Fizyka_smietnik
             // H >= 5L
             while (5 * Convert.ToInt32(numericUpDown3.Value) > Convert.ToInt32(numericUpDown4.Value))
                 numericUpDown3.Value= Convert.ToInt32(numericUpDown4.Value)/5;
+            changedh(sender, e);
+            changedlambda(sender, e);
+        }
+
+        private void changedlambda(object sender, EventArgs e)
+        {
+            if (numericUpDown6.Value + numericUpDown5.Value > numericUpDown4.Value)
+                numericUpDown6.Value = numericUpDown4.Value - numericUpDown5.Value;
+        }
+
+        private void changedh(object sender, EventArgs e)
+        {
+            if (numericUpDown5.Value != 0)
+            {
+                if (numericUpDown6.Value + numericUpDown5.Value > numericUpDown4.Value)
+                    numericUpDown5.Value = numericUpDown4.Value - numericUpDown6.Value;
+            }
         }
     }
 
@@ -575,6 +618,5 @@ namespace Fizyka_smietnik
             if (dy < 0) dy = -dy;
             return (dy * dy + dx * dx);
         }
-
     }
 }
