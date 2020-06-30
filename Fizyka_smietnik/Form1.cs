@@ -21,7 +21,7 @@ namespace Fizyka_smietnik
         private int defaultRadius = 3;
         private int maxVel = 100;
         private int K = 1;
-        private const long g = 1000;
+        private long g = 1000;
         private long dt;
         private int M = 5000; //liczba ticków co które oblicza sie ciśnienie
 
