@@ -121,7 +121,7 @@ namespace Fizyka_smietnik
             label6.Invoke(new MethodInvoker(
                          delegate ()
                          {
-                             label6.Text = (("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + "\nSimulation time: " + (1000 * ticksCount * dt / Stopwatch.Frequency).ToString() + "ms \nTicks: " + ticksCount.ToString() + "\nSkipped ticks: " + skippedTicksCount.ToString()));
+                             label6.Text = (("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + "\nSpeed: " + (tps/1.0 / Stopwatch.Frequency * dt).ToString() + "X" + "\nSimulation time: " + (1000 * ticksCount * dt / Stopwatch.Frequency).ToString() + "ms \nTicks: " + ticksCount.ToString() + "\nSkipped ticks: " + skippedTicksCount.ToString()));
                          }));
             //drawing.DrawString(("FPS: " + fps.ToString()), drawFont, blackBrush, 5 , 5);
         }
