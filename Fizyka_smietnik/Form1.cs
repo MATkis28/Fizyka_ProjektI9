@@ -183,7 +183,7 @@ namespace Fizyka_smietnik
                 //liczenie ciśnienia
                 if (m==M)
                 {
-                    detector.calculatePressure(M * dt);
+                    detector.calculatePressure((double)M * dt / Stopwatch.Frequency);
                     m = 0;
                 }
                 //oblicznie czasu kolejnego tick'a
