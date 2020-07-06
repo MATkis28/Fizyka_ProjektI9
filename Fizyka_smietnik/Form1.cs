@@ -556,6 +556,7 @@ namespace Fizyka_smietnik
                 wektor1katRoboczy -= 360;
             if (wektor1katRoboczy <= -180)
                 wektor1katRoboczy += 360;
+               
             double wektorP1wartosc = Math.Sin(wektor1katRoboczy) * wektor1wartosc;
             double wektorR1wartosc = Math.Cos(wektor1katRoboczy) * wektor1wartosc;
 
@@ -564,6 +565,7 @@ namespace Fizyka_smietnik
                 wektor2katRoboczy -= 360;
             if (wektor2katRoboczy <= -180)
                 wektor2katRoboczy += 360;
+                
             double wektorP2wartosc = Math.Sin(wektor2katRoboczy) * wektor2wartosc;
             double wektorR2wartosc = Math.Cos(wektor2katRoboczy) * wektor2wartosc;
 
