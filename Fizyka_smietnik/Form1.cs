@@ -14,7 +14,7 @@ namespace Fizyka_smietnik
         Particle[] particles;
         Detector detector;// = new Detector(300,500); //TODO: jakoś to trzeba zrobić żeby można było zmieniać te wartosci w UI i może narysowac ten detektor jakos
 
-        //symulacja
+        //symulacja [test]
         private int nh;
         private int nl;
         private int numberofparticles = 5;
