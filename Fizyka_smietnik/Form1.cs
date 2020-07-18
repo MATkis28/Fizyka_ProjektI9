@@ -11,6 +11,7 @@ namespace Fizyka_smietnik
     {
         Thread drawThread;
         Thread physicsThread;
+        Thread superviseThread;
         Particle[] particles;
         Detector detector;// = new Detector(300,500); //TODO: jakoś to trzeba zrobić żeby można było zmieniać te wartosci w UI i może narysowac ten detektor jakos
 
@@ -24,7 +25,7 @@ namespace Fizyka_smietnik
         private long g = 1000;
         private long dt;
         private int M = 5000; //liczba ticków co które oblicza sie ciśnienie
-        private int m = 0;
+        
 
         //badania out
         private SimulationOutForm sof;
@@ -38,6 +39,7 @@ namespace Fizyka_smietnik
         //stany
         private bool drawingRunning = false;
         private bool physicsRuning = false;
+        private bool superviseRunning = false;
         private bool physicsPause = false;
 
         //debug info
@@ -169,6 +171,7 @@ namespace Fizyka_smietnik
             int skippedTicksPackage = 10;
             long nextTpsCount = Stopwatch.Frequency;
             int tps = 0;
+            int m = 0;
 
             PhysicsTimer.Start();
             while (physicsRuning && particles != null)
@@ -193,14 +196,8 @@ namespace Fizyka_smietnik
                 if (m==M)
                 {
                     detector.calculatePressure(M * (double)dt / Stopwatch.Frequency);
-                    sof.appendLine("\t" + outValueId.ToString()+": "+detector.p.ToString());
-                    if (outValueId == numberOfOutValues - 1)
-                        nextSimulationStep();
-                    else
-                    {
-                        outValueId++;
-                        m = 0;
-                    }
+                    m = 0;
+                    physicsPause = true;
                 }
                 //oblicznie czasu kolejnego tick'a
                 nextTick += dt;
@@ -231,7 +228,7 @@ namespace Fizyka_smietnik
         private void button1_Click(object sender, EventArgs e)
         {
             //testy
-            createSeriesOfSimulation(500, 10, 3, 100, 60, 300, 50, 20, 5000, 500);
+            createSeriesOfSimulation(10, 10, 3, 100, 60, 300, 50, 20, 5000, 500);
             return;
 
             defaultRadius = Convert.ToInt32(numericUpDown7.Value);
@@ -283,7 +280,6 @@ namespace Fizyka_smietnik
             tps = 0;
             ticksCount = 0;
             skippedTicksCount = 0;
-            m = 0;
 
             //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
             drawingRunning = true;
@@ -299,74 +295,103 @@ namespace Fizyka_smietnik
             System.Threading.Thread.Sleep(1000);
         }
 
+        private void supervise()
+        {
+            //wypisywanie do out
+            sof.appendLine("Simulation: ", Color.Red);
+            sof.appendLine("\tN = " + numberofparticles.ToString(), Color.Red);
+            sof.appendLine("\tMVel = " + maxVel.ToString(), Color.Red);
+            sof.appendLine("\tR = " + defaultRadius.ToString(), Color.Red);
+            sof.appendLine("\tG = " + g.ToString(), Color.Red);
+            sof.appendLine("\tL = " + nl.ToString(), Color.Red);
+            sof.appendLine("\tH = " + nh.ToString(), Color.Red);
+            //sof.appendLine("\th = " + h.ToString(), Color.Red);
+            //sof.appendLine("\tlambda = " + lambda.ToString(), Color.Red);
+            sof.appendLine("\tM = " + M.ToString(), Color.Red);
+            //sof.appendLine("\tdelay = " + delay.ToString(), Color.Red);
+            sof.appendLine("\tVariable = " + simulatedVariable.ToString(), Color.Red);
+            sof.append("\tVariable values = { ", Color.Red);
+            for (int i = 0; i < simulationVariableValues.Length; i++)
+                sof.append(simulationVariableValues[i].ToString() + " ", Color.Red);
+            sof.appendLine("}", Color.Red);
+            nextSimulationStep();
+            sof.appendLine("Step " + simulationStep.ToString() + " ( N = " + simulationVariableValues[simulationStep].ToString() + ")", Color.Blue);
+            sof.appendLine("Results : ");
+            sof.append("\t0: ");
+            physicsPause = false;
+
+            while (superviseRunning)
+            {
+                Thread.Sleep(1000);
+                if (physicsPause)
+                {
+                    sof.appendLine(detector.p.ToString());
+                    if (outValueId < numberOfOutValues - 1)
+                    {
+                        outValueId++;
+                        sof.append("\t" + outValueId.ToString() + ": ");
+                        physicsPause = false;
+                    }
+                    else if (simulationStep < simulationVariableValues.Length - 1)
+                    {
+                        nextSimulationStep();
+                        sof.appendLine("Step " + simulationStep.ToString() + " ( N = " + simulationVariableValues[simulationStep].ToString() + ")", Color.Blue);
+                        sof.appendLine("Results : ");
+                        sof.append("\t0: ");
+                        physicsPause = false;
+                    }
+                    else
+                    {
+                        sof.appendLine("End of simulations", Color.Red);
+                        superviseRunning = false;
+                    }
+                }
+            }
+        }
+
         private void createSeriesOfSimulation(int N, int MVel, int R, int G, int L, int H, int h, int lambda, int M, int delay)
         {
             //tworzenie kroków
             simulatedVariable = 'N';
             simulationVariableValues = new int[3];
-            simulationVariableValues[0] = 100;
+            simulationVariableValues[0] = 200;
             simulationVariableValues[1] = 400;
             simulationVariableValues[2] = 800;
             simulationStep = -1;
 
-            //wypisywanie do out
-            this.sof = new SimulationOutForm();
-            sof.appendLine("Simulation: ", Color.Red);
-            sof.appendLine("\tN = " + N.ToString(), Color.Red);
-            sof.appendLine("\tMVel = " + MVel.ToString(), Color.Red);
-            sof.appendLine("\tR = " + R.ToString(), Color.Red);
-            sof.appendLine("\tG = " + G.ToString(), Color.Red);
-            sof.appendLine("\tL = " + L.ToString(), Color.Red);
-            sof.appendLine("\tH = " + H.ToString(), Color.Red);
-            sof.appendLine("\th = " + h.ToString(), Color.Red);
-            sof.appendLine("\tlambda = " + lambda.ToString(), Color.Red);
-            sof.appendLine("\tM = " + M.ToString(), Color.Red);
-            sof.appendLine("\tdelay = " + delay.ToString(), Color.Red);
-            sof.appendLine("\tVariable = " + simulatedVariable.ToString(), Color.Red);
-            sof.append("\tVariable values = { ", Color.Red);
-            for (int i=0; i< simulationVariableValues.Length; i++)
-                sof.append(simulationVariableValues[i].ToString()+" ", Color.Red);
-            sof.appendLine("}", Color.Red);
-
             createSimulation(N, MVel, R, G, L, H, h, lambda, M, delay);
-            nextSimulationStep();
-            physicsPause = false;
-            button2.Text = "Physics Unpaused";
+
+            this.sof = new SimulationOutForm();
+            superviseRunning = true;
+            superviseThread = new Thread(supervise);
+            superviseThread.Start();
         }
 
         private void nextSimulationStep()
         {
-            if (simulationStep + 1 < simulationVariableValues.Length)
+            //resetowanie liczników
+            fps = 0;
+            tps = 0;
+            ticksCount = 0;
+            skippedTicksCount = 0;
+            outValueId = 0;
+
+            simulationStep++;
+            switch (simulatedVariable)
             {
-                //resetowanie liczników
-                fps = 0;
-                tps = 0;
-                ticksCount = 0;
-                skippedTicksCount = 0;
-                outValueId = 0;
-                m = 0;
+                case 'N':
+                    this.numberofparticles = simulationVariableValues[simulationStep];
+                    //UTWORZENIE TABLICY CZASTEK
+                    Random rng = new Random(); //UTWORZENIE SEEDA RNG
+                    double dts = (double)dt / Stopwatch.Frequency;
+                    particles = new Particle[numberofparticles];
+                    for (int i = 0; i < numberofparticles; i++)
+                        particles[i] = new Particle(defaultRadius, dts, g, box, maxVel, rng);
+                    break;
+                case 'h':
 
-                simulationStep++;
-                switch (simulatedVariable)
-                {
-                    case 'N':
-                        sof.appendLine("Step "+ simulationStep.ToString() + " ( N = " + simulationVariableValues[simulationStep].ToString() + ")", Color.Blue);
-                        sof.appendLine("Results : ");
-                        this.numberofparticles = simulationVariableValues[simulationStep];
-                        //UTWORZENIE TABLICY CZASTEK
-                        Random rng = new Random(); //UTWORZENIE SEEDA RNG
-                        double dts = (double)dt / Stopwatch.Frequency;
-                        particles = new Particle[numberofparticles];
-                        for (int i = 0; i < numberofparticles; i++)
-                            particles[i] = new Particle(defaultRadius, dts, g, box, maxVel, rng);
-                        break;
-                    case 'h':
-
-                        break;
-                }
+                    break;
             }
-            else
-                physicsPause = true;
         }
 
         //tworzenie symulacji - badania
@@ -408,7 +433,6 @@ namespace Fizyka_smietnik
             tps = 0;
             ticksCount = 0;
             skippedTicksCount = 0;
-            m = 0;
 
             //UTWORZENIE DETEKTORA
             detector = new Detector(box.Height - (h * defaultRadius) - (lambda * defaultRadius), box.Height - (h * defaultRadius));

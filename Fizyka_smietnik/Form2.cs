@@ -36,10 +36,20 @@ namespace Fizyka_smietnik
 
         public void append(String text, Color color)
         {
-            TextArea.SelectionStart = TextArea.TextLength;
-            TextArea.SelectionLength = 0;
-            TextArea.SelectionColor = color;
-            TextArea.AppendText(text);
+            TextArea.Invoke
+            (
+                new MethodInvoker
+                (
+                    delegate ()
+                    {
+                        TextArea.SelectionStart = TextArea.TextLength;
+                        TextArea.SelectionLength = 0;
+                        TextArea.SelectionColor = color;
+                        TextArea.AppendText(text);
+                    }
+                )
+            );
+            
         }
     }
 }
