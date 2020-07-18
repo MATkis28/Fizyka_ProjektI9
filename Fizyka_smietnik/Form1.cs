@@ -14,7 +14,7 @@ namespace Fizyka_smietnik
         Particle[] particles;
         Detector detector;// = new Detector(300,500); //TODO: jakoś to trzeba zrobić żeby można było zmieniać te wartosci w UI i może narysowac ten detektor jakos
 
-        //symulacja [test]
+        //symulacja
         private int nh;
         private int nl;
         private int numberofparticles = 5;
@@ -24,6 +24,16 @@ namespace Fizyka_smietnik
         private long g = 1000;
         private long dt;
         private int M = 5000; //liczba ticków co które oblicza sie ciśnienie
+        private int m = 0;
+
+        //badania out
+        private SimulationOutForm sof;
+        private int outValueId = 0;
+        private int numberOfOutValues = 5;
+        private char simulatedVariable;
+        private int[] simulationVariableValues;
+        private int simulationStep = 0;
+
 
         //stany
         private bool drawingRunning = false;
@@ -159,7 +169,6 @@ namespace Fizyka_smietnik
             int skippedTicksPackage = 10;
             long nextTpsCount = Stopwatch.Frequency;
             int tps = 0;
-            int m = 0;
 
             PhysicsTimer.Start();
             while (physicsRuning && particles != null)
@@ -184,7 +193,14 @@ namespace Fizyka_smietnik
                 if (m==M)
                 {
                     detector.calculatePressure(M * (double)dt / Stopwatch.Frequency);
-                    m = 0;
+                    sof.appendLine("\t" + outValueId.ToString()+": "+detector.p.ToString());
+                    if (outValueId == numberOfOutValues - 1)
+                        nextSimulationStep();
+                    else
+                    {
+                        outValueId++;
+                        m = 0;
+                    }
                 }
                 //oblicznie czasu kolejnego tick'a
                 nextTick += dt;
@@ -214,6 +230,10 @@ namespace Fizyka_smietnik
         //tworzenie symulacji
         private void button1_Click(object sender, EventArgs e)
         {
+            //testy
+            createSeriesOfSimulation(500, 10, 3, 100, 60, 300, 50, 20, 5000, 500);
+            return;
+
             defaultRadius = Convert.ToInt32(numericUpDown7.Value);
             AutoSize = false;
             Size = defaultFormSize;
@@ -258,11 +278,12 @@ namespace Fizyka_smietnik
             for (int i = 0; i < numberofparticles; i++)
                 particles[i] = new Particle(defaultRadius, dts, g, box, maxVel, rng);
 
-            //RESETOWANIE TPS
+            //RESETOWANIE LICZNIKÓW
             fps = 0;
             tps = 0;
             ticksCount = 0;
             skippedTicksCount = 0;
+            m = 0;
 
             //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
             drawingRunning = true;
@@ -276,6 +297,139 @@ namespace Fizyka_smietnik
             physicsThread.Start();
             physicsRuning = true;
             System.Threading.Thread.Sleep(1000);
+        }
+
+        private void createSeriesOfSimulation(int N, int MVel, int R, int G, int L, int H, int h, int lambda, int M, int delay)
+        {
+            //tworzenie kroków
+            simulatedVariable = 'N';
+            simulationVariableValues = new int[3];
+            simulationVariableValues[0] = 100;
+            simulationVariableValues[1] = 400;
+            simulationVariableValues[2] = 800;
+            simulationStep = -1;
+
+            //wypisywanie do out
+            this.sof = new SimulationOutForm();
+            sof.appendLine("Simulation: ", Color.Red);
+            sof.appendLine("\tN = " + N.ToString(), Color.Red);
+            sof.appendLine("\tMVel = " + MVel.ToString(), Color.Red);
+            sof.appendLine("\tR = " + R.ToString(), Color.Red);
+            sof.appendLine("\tG = " + G.ToString(), Color.Red);
+            sof.appendLine("\tL = " + L.ToString(), Color.Red);
+            sof.appendLine("\tH = " + H.ToString(), Color.Red);
+            sof.appendLine("\th = " + h.ToString(), Color.Red);
+            sof.appendLine("\tlambda = " + lambda.ToString(), Color.Red);
+            sof.appendLine("\tM = " + M.ToString(), Color.Red);
+            sof.appendLine("\tdelay = " + delay.ToString(), Color.Red);
+            sof.appendLine("\tVariable = " + simulatedVariable.ToString(), Color.Red);
+            sof.append("\tVariable values = { ", Color.Red);
+            for (int i=0; i< simulationVariableValues.Length; i++)
+                sof.append(simulationVariableValues[i].ToString()+" ", Color.Red);
+            sof.appendLine("}", Color.Red);
+
+            createSimulation(N, MVel, R, G, L, H, h, lambda, M, delay);
+            nextSimulationStep();
+            physicsPause = false;
+            button2.Text = "Physics Unpaused";
+        }
+
+        private void nextSimulationStep()
+        {
+            if (simulationStep + 1 < simulationVariableValues.Length)
+            {
+                //resetowanie liczników
+                fps = 0;
+                tps = 0;
+                ticksCount = 0;
+                skippedTicksCount = 0;
+                outValueId = 0;
+                m = 0;
+
+                simulationStep++;
+                switch (simulatedVariable)
+                {
+                    case 'N':
+                        sof.appendLine("Step "+ simulationStep.ToString() + " ( N = " + simulationVariableValues[simulationStep].ToString() + ")", Color.Blue);
+                        sof.appendLine("Results : ");
+                        this.numberofparticles = simulationVariableValues[simulationStep];
+                        //UTWORZENIE TABLICY CZASTEK
+                        Random rng = new Random(); //UTWORZENIE SEEDA RNG
+                        double dts = (double)dt / Stopwatch.Frequency;
+                        particles = new Particle[numberofparticles];
+                        for (int i = 0; i < numberofparticles; i++)
+                            particles[i] = new Particle(defaultRadius, dts, g, box, maxVel, rng);
+                        break;
+                    case 'h':
+
+                        break;
+                }
+            }
+            else
+                physicsPause = true;
+        }
+
+        //tworzenie symulacji - badania
+        private void createSimulation(int N, int MVel, int R, int G, int L, int H, int h, int lambda, int M, int delay)
+        {
+            //przerywanie poprzedniej symulacji
+            if (physicsThread != null)
+            {
+                physicsThread.Abort();
+            }
+            if (drawThread != null)
+            {
+                drawThread.Abort();
+            }
+
+            //ustawianie parametrów
+            this.numberofparticles = N;
+            this.maxVel = MVel;
+            this.defaultRadius = R;
+            this.g = G;
+            this.nl = L;
+            this.nh = H;
+            this.M = M;
+
+            //ustalanie rozmiaru
+            this.AutoSize = false;
+            this.Size = defaultFormSize;
+            this.box.Width = nl * defaultRadius;
+            this.box.Height = nh * defaultRadius;
+            this.K = nl;
+            this.pictureBox1.Size = box;
+            this.AutoSize = true;
+
+            //ustawianie dt
+            dt = Stopwatch.Frequency / (K * maxVel);
+
+            //RESETOWANIE LICZNIKÓW
+            fps = 0;
+            tps = 0;
+            ticksCount = 0;
+            skippedTicksCount = 0;
+            m = 0;
+
+            //UTWORZENIE DETEKTORA
+            detector = new Detector(box.Height - (h * defaultRadius) - (lambda * defaultRadius), box.Height - (h * defaultRadius));
+            
+            //UTWORZENIE TABLICY CZASTEK
+            Random rng = new Random(); //UTWORZENIE SEEDA RNG
+            double dts = (double)dt / Stopwatch.Frequency;
+            particles = new Particle[numberofparticles];
+            for (int i = 0; i < numberofparticles; i++)
+                particles[i] = new Particle(defaultRadius, dts, g, box, maxVel, rng);
+
+            //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
+            drawingRunning = true;
+            drawThread = new Thread(draw);
+            drawThread.Start();
+
+            physicsRuning = true;
+            physicsPause = true;
+            button2.Text = "Physics Paused";
+            physicsThread = new Thread(physics);
+            physicsThread.Start();
         }
 
         // pauzowanie fizyki
