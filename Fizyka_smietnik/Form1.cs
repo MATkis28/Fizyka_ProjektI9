@@ -29,11 +29,11 @@ namespace Fizyka_smietnik
 
         //badania out
         private SimulationOutForm sof;
-        private int outValueId = 0;
-        private int numberOfOutValues = 5;
+        private int outValueId;
+        private int numberOfOutValues = 10;
         private char simulatedVariable;
         private int[] simulationVariableValues;
-        private int simulationStep = 0;
+        private int simulationStep;
 
 
         //stany
@@ -97,7 +97,8 @@ namespace Fizyka_smietnik
             {
                 //particleBrush.Color = particles[i].color;
                 //drawing.FillEllipse(particleBrush, (float)((particles[i].X - particles[i].Radius) / 1), (float)((particles[i].Y - particles[i].Radius) / 1), 2 * particles[i].Radius, 2 * particles[i].Radius);
-                drawing.DrawEllipse(blackPen, (float)(particles[i].X - particles[i].Radius), (float)(particles[i].Y - particles[i].Radius), 2 * particles[i].Radius, 2 * particles[i].Radius);
+                if(particles[i] != null)
+                    drawing.DrawEllipse(blackPen, (float)(particles[i].X - particles[i].Radius), (float)(particles[i].Y - particles[i].Radius), 2 * particles[i].Radius, 2 * particles[i].Radius);
                 blackPen.Color = Color.Black;
             }
         }
@@ -314,10 +315,13 @@ namespace Fizyka_smietnik
             for (int i = 0; i < simulationVariableValues.Length; i++)
                 sof.append(simulationVariableValues[i].ToString() + " ", Color.Red);
             sof.appendLine("}", Color.Red);
+            sof.appendLine("\tNumberOfOutValues = " + numberOfOutValues.ToString(), Color.Red);
+            sof.append("Step", Color.Blue);
+            for (int i = 0; i < numberOfOutValues; i++)
+                sof.append("\t" + i, Color.Blue);
+            sof.appendLine("");
             nextSimulationStep();
-            sof.appendLine("Step " + simulationStep.ToString() + " ( N = " + simulationVariableValues[simulationStep].ToString() + ")", Color.Blue);
-            sof.appendLine("Results : ");
-            sof.append("\t0: ");
+            sof.append("Step " + simulationStep.ToString() + " ( N = " + simulationVariableValues[simulationStep].ToString() + ")", Color.Blue);
             physicsPause = false;
 
             while (superviseRunning)
@@ -325,24 +329,21 @@ namespace Fizyka_smietnik
                 Thread.Sleep(1000);
                 if (physicsPause)
                 {
-                    sof.appendLine(detector.p.ToString());
+                    sof.append("\t"+detector.p.ToString());
                     if (outValueId < numberOfOutValues - 1)
                     {
                         outValueId++;
-                        sof.append("\t" + outValueId.ToString() + ": ");
                         physicsPause = false;
                     }
                     else if (simulationStep < simulationVariableValues.Length - 1)
                     {
                         nextSimulationStep();
-                        sof.appendLine("Step " + simulationStep.ToString() + " ( N = " + simulationVariableValues[simulationStep].ToString() + ")", Color.Blue);
-                        sof.appendLine("Results : ");
-                        sof.append("\t0: ");
+                        sof.append("\nStep " + simulationStep.ToString() + " ( N = " + simulationVariableValues[simulationStep].ToString() + ")", Color.Blue);
                         physicsPause = false;
                     }
                     else
                     {
-                        sof.appendLine("End of simulations", Color.Red);
+                        sof.appendLine("\nEnd of simulations", Color.Red);
                         superviseRunning = false;
                     }
                 }
@@ -353,15 +354,18 @@ namespace Fizyka_smietnik
         {
             //tworzenie kroków
             simulatedVariable = 'N';
-            simulationVariableValues = new int[3];
-            simulationVariableValues[0] = 200;
-            simulationVariableValues[1] = 400;
-            simulationVariableValues[2] = 800;
+            simulationVariableValues = new int[6];
+            simulationVariableValues[0] = 25;
+            simulationVariableValues[1] = 50;
+            simulationVariableValues[2] = 100;
+            simulationVariableValues[3] = 200;
+            simulationVariableValues[4] = 400;
+            simulationVariableValues[5] = 800;
             simulationStep = -1;
 
             createSimulation(N, MVel, R, G, L, H, h, lambda, M, delay);
 
-            this.sof = new SimulationOutForm();
+            sof = new SimulationOutForm();
             superviseRunning = true;
             superviseThread = new Thread(supervise);
             superviseThread.Start();

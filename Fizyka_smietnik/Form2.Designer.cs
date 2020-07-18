@@ -38,15 +38,16 @@
             this.TextArea.Margin = new System.Windows.Forms.Padding(0);
             this.TextArea.Name = "TextArea";
             this.TextArea.ReadOnly = true;
-            this.TextArea.Size = new System.Drawing.Size(284, 461);
+            this.TextArea.Size = new System.Drawing.Size(784, 561);
             this.TextArea.TabIndex = 0;
             this.TextArea.Text = "";
+            this.TextArea.WordWrap = false;
             // 
             // SimulationOutForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 461);
+            this.ClientSize = new System.Drawing.Size(784, 561);
             this.Controls.Add(this.TextArea);
             this.Name = "SimulationOutForm";
             this.Text = "Simulation";
