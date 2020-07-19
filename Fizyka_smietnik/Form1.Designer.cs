@@ -51,6 +51,7 @@
             this.numericUpDown7 = new System.Windows.Forms.NumericUpDown();
             this.label10 = new System.Windows.Forms.Label();
             this.numericUpDown8 = new System.Windows.Forms.NumericUpDown();
+            this.button4 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).BeginInit();
@@ -72,21 +73,21 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(16, 27);
+            this.button1.Location = new System.Drawing.Point(17, 8);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(153, 43);
+            this.button1.Size = new System.Drawing.Size(153, 36);
             this.button1.TabIndex = 1;
-            this.button1.Text = "Utwórz Symulacje";
+            this.button1.Text = "Create Simulation";
             this.button1.UseVisualStyleBackColor = true;
             this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(36, 76);
+            this.button2.Location = new System.Drawing.Point(17, 92);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(118, 53);
+            this.button2.Size = new System.Drawing.Size(152, 36);
             this.button2.TabIndex = 3;
-            this.button2.Text = "Brak Symulacji";
+            this.button2.Text = "No Simulation";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -147,7 +148,7 @@
             this.numericUpDown2.Size = new System.Drawing.Size(92, 20);
             this.numericUpDown2.TabIndex = 10;
             this.numericUpDown2.Value = new decimal(new int[] {
-            100,
+            50,
             0,
             0,
             0});
@@ -169,7 +170,7 @@
             this.numericUpDown3.Size = new System.Drawing.Size(92, 20);
             this.numericUpDown3.TabIndex = 11;
             this.numericUpDown3.Value = new decimal(new int[] {
-            20,
+            60,
             0,
             0,
             0});
@@ -211,7 +212,7 @@
             this.numericUpDown4.Size = new System.Drawing.Size(92, 20);
             this.numericUpDown4.TabIndex = 13;
             this.numericUpDown4.Value = new decimal(new int[] {
-            100,
+            300,
             0,
             0,
             0});
@@ -231,14 +232,14 @@
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.5F);
-            this.label6.Location = new System.Drawing.Point(15, 424);
+            this.label6.Location = new System.Drawing.Point(34, 424);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(0, 12);
             this.label6.TabIndex = 16;
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(17, 134);
+            this.textBox1.Location = new System.Drawing.Point(18, 134);
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
             this.textBox1.Size = new System.Drawing.Size(152, 20);
@@ -329,7 +330,7 @@
             this.numericUpDown7.Size = new System.Drawing.Size(92, 20);
             this.numericUpDown7.TabIndex = 22;
             this.numericUpDown7.Value = new decimal(new int[] {
-            6,
+            3,
             0,
             0,
             0});
@@ -360,11 +361,22 @@
             0,
             0});
             // 
+            // button4
+            // 
+            this.button4.Location = new System.Drawing.Point(17, 50);
+            this.button4.Name = "button4";
+            this.button4.Size = new System.Drawing.Size(153, 36);
+            this.button4.TabIndex = 26;
+            this.button4.Text = "Create Simulation Series";
+            this.button4.UseVisualStyleBackColor = true;
+            this.button4.Click += new System.EventHandler(this.button4_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(186, 426);
+            this.Controls.Add(this.button4);
             this.Controls.Add(this.label10);
             this.Controls.Add(this.numericUpDown8);
             this.Controls.Add(this.label9);
@@ -430,6 +442,7 @@
         private System.Windows.Forms.NumericUpDown numericUpDown7;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.NumericUpDown numericUpDown8;
+        private System.Windows.Forms.Button button4;
     }
 }
 

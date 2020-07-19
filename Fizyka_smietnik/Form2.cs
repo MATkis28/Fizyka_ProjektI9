@@ -10,13 +10,12 @@ using System.Windows.Forms;
 
 namespace Fizyka_smietnik
 {
-    public partial class SimulationOutForm : Form
+    public partial class SimulationSeriesOutForm : Form
     {
-        public SimulationOutForm()
+        public SimulationSeriesOutForm()
         {
             InitializeComponent();
             CenterToScreen();
-            Visible = true;
         }
 
         public void appendLine(String text)
@@ -50,6 +49,16 @@ namespace Fizyka_smietnik
                 )
             );
             
+        }
+
+        private void Form_Closing(object sender, FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                if (MessageBox.Show("Do you want to end simulation series?", Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    Hide();
+            }
         }
     }
 }
