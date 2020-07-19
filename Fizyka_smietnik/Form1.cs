@@ -123,19 +123,13 @@ namespace Fizyka_smietnik
             drawing.Clear(Color.White);
         }
 
-        private void showFPS(Graphics drawing)
+        private void updateFPS(Graphics drawing)
         {
-            label5.Invoke(new MethodInvoker(
-                         delegate ()
-                         {
-                             label5.Text = ("FPS: " + fps.ToString());
-                         }));
             label6.Invoke(new MethodInvoker(
-                         delegate ()
-                         {
-                             label6.Text = (("TPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + "\nSpeed: " + (tps/1.0 / Stopwatch.Frequency * dt).ToString() + "X" + "\nSimulation time: " + (1000 * ticksCount * dt / Stopwatch.Frequency).ToString() + "ms \nTicks: " + ticksCount.ToString() + "\nSkipped ticks: " + skippedTicksCount.ToString()));
-                         }));
-            //drawing.DrawString(("FPS: " + fps.ToString()), drawFont, blackBrush, 5 , 5);
+                delegate ()
+                {
+                    label6.Text = "FPS: " + fps.ToString() + "\nTPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + "\nSpeed: " + (tps/1.0 / Stopwatch.Frequency * dt).ToString() + "X" + "\nSimulation time: " + (1000 * ticksCount * dt / Stopwatch.Frequency).ToString() + "ms \nTicks: " + ticksCount.ToString() + "\nSkipped ticks: " + skippedTicksCount.ToString();
+                }));
         }
 
         public void draw()
@@ -147,7 +141,7 @@ namespace Fizyka_smietnik
             while (drawingRunning)
             {
                 drawWatch.Restart();
-                if (debugFPS) showFPS(SimDrawing);
+                if (debugFPS) updateFPS(SimDrawing);
                 drawParticles(SimDrawing);
                 drawBorders(SimDrawing);
                 drawDetector(SimDrawing);
@@ -216,73 +210,6 @@ namespace Fizyka_smietnik
         {
             for (int i = 0; i < particles.Length; i++)
                 particles[i].updateparticle(particles, detector, i);
-        }
-
-        //tworzenie symulacji
-        private void button1_Click(object sender, EventArgs e)
-        {
-            defaultRadius = Convert.ToInt32(numericUpDown7.Value);
-            AutoSize = false;
-            Size = defaultFormSize;
-            Random rng = new Random(); //UTWORZENIE SEEDA RNG
-            nh = Convert.ToInt32(numericUpDown4.Value); //POBRANIE ROZMAIRU OKNA
-            nl = Convert.ToInt32(numericUpDown3.Value);
-            box.Width = nl * defaultRadius;
-            box.Height = nh * defaultRadius;
-            K = nl; //K = (nl < nh) ? nl : nh; 
-            pictureBox1.Size=box;
-            AutoSize = true;
-            if (physicsThread != null)      //WYLACZENIE POPRZEDNICH SYMULACJI
-            {
-                physicsThread.Abort();
-            }
-            if (drawThread != null)
-            {
-                drawThread.Abort();
-            }
-            ticksCount = 0;
-            skippedTicksCount = 0;
-
-            //UTWORZENIE DETEKTORA
-            double h = Convert.ToInt32(numericUpDown5.Value);
-            double lambda = Convert.ToInt32(numericUpDown6.Value);
-            detector = new Detector(box.Height -(h*defaultRadius) -(lambda*defaultRadius), box.Height- (h * defaultRadius));
-
-            //WCZYTANIE WARTOSCI Z OKNA
-            numberofparticles = Convert.ToInt32(numericUpDown1.Value);
-            if (4 * numberofparticles > nh * nl)
-            {
-                numberofparticles = nh * nl / 4;
-                numericUpDown1.Value = numberofparticles;
-            }
-            maxVel =  Convert.ToInt32(numericUpDown2.Value);
-            dt = Stopwatch.Frequency / (K * maxVel);
-            g = Convert.ToInt32(numericUpDown8.Value);
-
-            //UTWORZENIE TABLICY CZASTEK
-            double dts = (double)dt / Stopwatch.Frequency;
-            particles = new Particle[numberofparticles];
-            for (int i = 0; i < numberofparticles; i++)
-                particles[i] = new Particle(defaultRadius, dts, g, box, maxVel, rng);
-
-            //RESETOWANIE LICZNIKÓW
-            fps = 0;
-            tps = 0;
-            ticksCount = 0;
-            skippedTicksCount = 0;
-
-            //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
-            drawingRunning = true;
-            drawThread = new Thread(draw);
-            drawThread.Start();
-
-            physicsRuning = true;
-            physicsPause = true;
-            button2.Text = "Physics Paused";
-            physicsThread = new Thread(physics);
-            physicsThread.Start();
-            physicsRuning = true;
-            System.Threading.Thread.Sleep(1000);
         }
 
         private void supervise()
@@ -376,27 +303,6 @@ namespace Fizyka_smietnik
             );
         }
 
-        private void createSeriesOfSimulation(int N, int MVel, int R, int G, int L, int H, int h, int lambda, int M, int delay, char simulatedVariable, int[] simulatedVariableValues, int numberOfOutValues)
-        {
-            simulationSeries = true;
-            button1.Enabled = false;
-            button2.Enabled = false;
-            button4.Enabled = false;
-
-            //tworzenie kroków
-            this.simulatedVariable = simulatedVariable;
-            this.simulatedVariableValues = simulatedVariableValues;
-            this.numberOfOutValues = numberOfOutValues;
-            simulationStepId = -1;
-
-            createSimulation(N, MVel, R, G, L, H, h, lambda, M, delay);
-
-            ssof.Visible = true;
-            superviseRunning = true;
-            superviseThread = new Thread(supervise);
-            superviseThread.Start();
-        }
-
         private void nextSimulationStep()
         {
             //resetowanie liczników
@@ -422,6 +328,27 @@ namespace Fizyka_smietnik
 
                     break;
             }
+        }
+
+        private void createSeriesOfSimulation(int N, int MVel, int R, int G, int L, int H, int h, int lambda, int M, int delay, char simulatedVariable, int[] simulatedVariableValues, int numberOfOutValues)
+        {
+            simulationSeries = true;
+            button1.Enabled = false;
+            button2.Enabled = false;
+            button4.Enabled = false;
+
+            //tworzenie kroków
+            this.simulatedVariable = simulatedVariable;
+            this.simulatedVariableValues = simulatedVariableValues;
+            this.numberOfOutValues = numberOfOutValues;
+            simulationStepId = -1;
+
+            createSimulation(N, MVel, R, G, L, H, h, lambda, M, delay);
+
+            ssof.Visible = true;
+            superviseRunning = true;
+            superviseThread = new Thread(supervise);
+            superviseThread.Start();
         }
 
         //tworzenie symulacji - serie symulacji
@@ -486,6 +413,73 @@ namespace Fizyka_smietnik
             physicsThread.Start();
         }
 
+        //tworzenie symulacji
+        private void button1_Click(object sender, EventArgs e)
+        {
+            defaultRadius = Convert.ToInt32(numericUpDown7.Value);
+            AutoSize = false;
+            Size = defaultFormSize;
+            Random rng = new Random(); //UTWORZENIE SEEDA RNG
+            nh = Convert.ToInt32(numericUpDown4.Value); //POBRANIE ROZMAIRU OKNA
+            nl = Convert.ToInt32(numericUpDown3.Value);
+            box.Width = nl * defaultRadius;
+            box.Height = nh * defaultRadius;
+            K = nl; //K = (nl < nh) ? nl : nh; 
+            pictureBox1.Size = box;
+            AutoSize = true;
+            if (physicsThread != null)      //WYLACZENIE POPRZEDNICH SYMULACJI
+            {
+                physicsThread.Abort();
+            }
+            if (drawThread != null)
+            {
+                drawThread.Abort();
+            }
+            ticksCount = 0;
+            skippedTicksCount = 0;
+
+            //UTWORZENIE DETEKTORA
+            double h = Convert.ToInt32(numericUpDown5.Value);
+            double lambda = Convert.ToInt32(numericUpDown6.Value);
+            detector = new Detector(box.Height - (h * defaultRadius) - (lambda * defaultRadius), box.Height - (h * defaultRadius));
+
+            //WCZYTANIE WARTOSCI Z OKNA
+            numberofparticles = Convert.ToInt32(numericUpDown1.Value);
+            if (4 * numberofparticles > nh * nl)
+            {
+                numberofparticles = nh * nl / 4;
+                numericUpDown1.Value = numberofparticles;
+            }
+            maxVel = Convert.ToInt32(numericUpDown2.Value);
+            dt = Stopwatch.Frequency / (K * maxVel);
+            g = Convert.ToInt32(numericUpDown8.Value);
+
+            //UTWORZENIE TABLICY CZASTEK
+            double dts = (double)dt / Stopwatch.Frequency;
+            particles = new Particle[numberofparticles];
+            for (int i = 0; i < numberofparticles; i++)
+                particles[i] = new Particle(defaultRadius, dts, g, box, maxVel, rng);
+
+            //RESETOWANIE LICZNIKÓW
+            fps = 0;
+            tps = 0;
+            ticksCount = 0;
+            skippedTicksCount = 0;
+
+            //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
+            drawingRunning = true;
+            drawThread = new Thread(draw);
+            drawThread.Start();
+
+            physicsRuning = true;
+            physicsPause = true;
+            button2.Text = "Physics Paused";
+            physicsThread = new Thread(physics);
+            physicsThread.Start();
+            physicsRuning = true;
+            System.Threading.Thread.Sleep(1000);
+        }
+
         // pauzowanie fizyki
         private void button2_Click(object sender, EventArgs e)
         {
@@ -510,13 +504,11 @@ namespace Fizyka_smietnik
             if (debugFPS)
             {
                 debugFPS = false;
-                label5.Visible = false;
                 label6.Visible = false;
             }
             else
             {
                 debugFPS = true;
-                label5.Visible = true;
                 label6.Visible = true;
             }
         }
