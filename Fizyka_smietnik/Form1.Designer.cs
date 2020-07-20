@@ -119,9 +119,9 @@
             // 
             this.button3.Location = new System.Drawing.Point(17, 445);
             this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(66, 22);
+            this.button3.Size = new System.Drawing.Size(72, 22);
             this.button3.TabIndex = 7;
-            this.button3.Text = "ShowFPS";
+            this.button3.Text = "Toggle FPS";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
@@ -413,9 +413,9 @@
             this.label12.AutoSize = true;
             this.label12.Location = new System.Drawing.Point(116, 329);
             this.label12.Name = "label12";
-            this.label12.Size = new System.Drawing.Size(32, 13);
+            this.label12.Size = new System.Drawing.Size(34, 13);
             this.label12.TabIndex = 31;
-            this.label12.Text = "delay";
+            this.label12.Text = "Delay";
             // 
             // numericUpDown10
             // 

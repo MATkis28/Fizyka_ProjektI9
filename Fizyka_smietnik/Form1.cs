@@ -76,7 +76,6 @@ namespace Fizyka_smietnik
             }
             else
                 textBox1.Text = detector.p.ToString();
-
         }
 
         private void drawBorders(Graphics drawing)
@@ -250,26 +249,32 @@ namespace Fizyka_smietnik
                 }
                 if (physicsPause)
                 {
-                    ssof.append("\t"+detector.p.ToString());
+                    
                     if (outValueId < numberOfOutValues - 1)
                     {
+                        ssof.append("\t" + detector.p.ToString());
                         outValueId++;
                         physicsPause = false;
                     }
                     else if (simulationStepId < simulatedVariableValues.Length - 1)
                     {
+                        ssof.append("\t" + detector.p.ToString());
                         nextSimulationStep();
                         ssof.append("\nStep " + simulationStepId.ToString() + " ( N = " + simulatedVariableValues[simulationStepId].ToString() + ")", Color.Blue);
                         physicsPause = false;
                     }
-                    else
+                    else if (simulationSeries)
                     {
-                        superviseRunning = false;
+                        ssof.append("\t" + detector.p.ToString());
+                        ssof.appendLine("\nSimulation series done.", Color.Green);
+                        simulationSeries = false;
+                       
+                        Thread.Sleep(5000);
                     }
                 }
             }
             physicsPause = true;
-            ssof.appendLine("\nEnd of simulations", Color.Red);
+            ssof.appendLine("\nClosing simulation series.", Color.Red);
             simulationSeries = false;
             button1.Invoke
             (
@@ -516,29 +521,28 @@ namespace Fizyka_smietnik
         //seria symulacji
         private void button4_Click(object sender, EventArgs e)
         {
-            int[] simulatedVariableValues = new int[6];
-            simulatedVariableValues[0] = 25;
-            simulatedVariableValues[1] = 50;
-            simulatedVariableValues[2] = 100;
-            simulatedVariableValues[3] = 200;
-            simulatedVariableValues[4] = 400;
-            simulatedVariableValues[5] = 800;
+            SimulationSeriesInForm ssif = new SimulationSeriesInForm();
+            ssif.ShowDialog();
+            if (ssif.runSS)
+            {
+                
 
-            createSeriesOfSimulation(
-                Convert.ToInt32(numericUpDown1.Value), //N
-                Convert.ToInt32(numericUpDown2.Value), //MVel
-                Convert.ToInt32(numericUpDown7.Value), //R
-                Convert.ToInt32(numericUpDown8.Value), //G
-                Convert.ToInt32(numericUpDown3.Value), //L
-                Convert.ToInt32(numericUpDown4.Value), //H
-                Convert.ToInt32(numericUpDown5.Value), //h
-                Convert.ToInt32(numericUpDown6.Value), //lambda
-                25000, //M
-                500, //delay
-                'N', //simulatedVariable
-                simulatedVariableValues, //simulatedVariableValues
-                10 //numberOfOutValues
-            );
+                createSeriesOfSimulation(
+                    Convert.ToInt32(numericUpDown1.Value), //N
+                    Convert.ToInt32(numericUpDown2.Value), //MVel
+                    Convert.ToInt32(numericUpDown7.Value), //R
+                    Convert.ToInt32(numericUpDown8.Value), //G
+                    Convert.ToInt32(numericUpDown3.Value), //L
+                    Convert.ToInt32(numericUpDown4.Value), //H
+                    Convert.ToInt32(numericUpDown5.Value), //h
+                    Convert.ToInt32(numericUpDown6.Value), //lambda
+                    25000, //M
+                    500, //delay
+                    ssif.simulatedVariable, //simulatedVariable
+                    ssif.simulatedVariableValues, //simulatedVariableValues
+                    ssif.numberOfOutValues //numberOfOutValues
+                );
+            }
         }
 
         // zakonczenie watkow przed zamknieciem okna

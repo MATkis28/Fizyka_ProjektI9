@@ -16,6 +16,7 @@ namespace Fizyka_smietnik
         {
             InitializeComponent();
             CenterToScreen();
+            TextArea.SelectionTabs = new int[] { 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000 };
         }
 
         public void appendLine(String text)
@@ -59,6 +60,7 @@ namespace Fizyka_smietnik
                 if (MessageBox.Show("Do you want to end simulation series?", Text, MessageBoxButtons.YesNo) == DialogResult.Yes)
                     Hide();
             }
+
         }
     }
 }
