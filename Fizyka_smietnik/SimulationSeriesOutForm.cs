@@ -16,7 +16,10 @@ namespace Fizyka_smietnik
         {
             InitializeComponent();
             CenterToScreen();
-            TextArea.SelectionTabs = new int[] { 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000 };
+            int[] temp = new int[30];
+            for( int i=0; i<30; i++)
+                temp[i] = i * 100;
+            TextArea.SelectionTabs = temp;
         }
 
         public void appendLine(String text)

@@ -388,9 +388,15 @@
             // 
             // numericUpDown9
             // 
+            this.numericUpDown9.DecimalPlaces = 3;
+            this.numericUpDown9.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
             this.numericUpDown9.Location = new System.Drawing.Point(18, 301);
             this.numericUpDown9.Maximum = new decimal(new int[] {
-            2000,
+            100000,
             0,
             0,
             0});
@@ -403,7 +409,7 @@
             this.numericUpDown9.Size = new System.Drawing.Size(92, 20);
             this.numericUpDown9.TabIndex = 28;
             this.numericUpDown9.Value = new decimal(new int[] {
-            10,
+            2,
             0,
             0,
             0});
@@ -419,9 +425,15 @@
             // 
             // numericUpDown10
             // 
+            this.numericUpDown10.DecimalPlaces = 3;
+            this.numericUpDown10.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            65536});
             this.numericUpDown10.Location = new System.Drawing.Point(18, 327);
             this.numericUpDown10.Maximum = new decimal(new int[] {
-            2000,
+            100000,
             0,
             0,
             0});
@@ -434,7 +446,7 @@
             this.numericUpDown10.Size = new System.Drawing.Size(92, 20);
             this.numericUpDown10.TabIndex = 30;
             this.numericUpDown10.Value = new decimal(new int[] {
-            10,
+            4,
             0,
             0,
             0});

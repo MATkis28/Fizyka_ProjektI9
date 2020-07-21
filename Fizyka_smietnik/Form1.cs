@@ -24,8 +24,8 @@ namespace Fizyka_smietnik
         private int K;
         private long g;
         private long dt;
-        private int M = 5000; //liczba ticków co które oblicza sie ciśnienie
-        private int delay = 0; //opóźnienie obliczania ciśnienia [ticki]
+        private double M; //liczba sekund co które oblicza sie ciśnienie
+        private double delay; //opóźnienie obliczania ciśnienia [sekund]
         
         //seria symulacji
         private SimulationSeriesOutForm ssof = new SimulationSeriesOutForm();
@@ -154,11 +154,11 @@ namespace Fizyka_smietnik
         {
             Stopwatch PhysicsTimer = new Stopwatch();
             long nextTick = 0;
-            int skippedTicksPackage = 10;
+            long nextCalculatePressure = (int)((delay + M) * Stopwatch.Frequency);
             long nextTpsCount = Stopwatch.Frequency;
+            int skippedTicksPackage = 10;
             int tps = 0;
-            int m = 0;
-
+            
             PhysicsTimer.Start();
             while (physicsRuning && particles != null)
             {
@@ -176,14 +176,13 @@ namespace Fizyka_smietnik
                 //tick
                 ticksCount++;
                 tps++;
-                m++;
                 physicsTick();
                 //liczenie ciśnienia
-                if (m==M)
+                if (PhysicsTimer.ElapsedTicks > nextCalculatePressure)
                 {
-                    detector.calculatePressure(M * (double)dt / Stopwatch.Frequency);
-                    m = 0;
-                    if(simulationSeries) //zatrzymywanie żeby spisać wynik
+                    detector.calculatePressure(M);
+                    nextCalculatePressure += (int) (M * Stopwatch.Frequency);
+                    if (simulationSeries) //zatrzymywanie, żeby spisać wynik
                         physicsPause = true;
                 }
                 //oblicznie czasu kolejnego tick'a
@@ -193,6 +192,7 @@ namespace Fizyka_smietnik
                 {
                     //pomijanie pakietu tick'ow
                     nextTick += skippedTicksPackage * dt;
+                    nextCalculatePressure += skippedTicksPackage * dt;
                     skippedTicksCount += skippedTicksPackage;
                 }
                 //liczenie tps
@@ -223,7 +223,7 @@ namespace Fizyka_smietnik
             //sof.appendLine("\th = " + h.ToString(), Color.Red);
             //sof.appendLine("\tlambda = " + lambda.ToString(), Color.Red);
             ssof.appendLine("\tM = " + M.ToString(), Color.Red);
-            //sof.appendLine("\tdelay = " + delay.ToString(), Color.Red);
+            ssof.appendLine("\tdelay = " + delay.ToString(), Color.Red);
             ssof.appendLine("\tVariable = " + simulatedVariable.ToString(), Color.Red);
             ssof.append("\tVariable values = { ", Color.Red);
             for (int i = 0; i < simulatedVariableValues.Length; i++)
@@ -241,7 +241,7 @@ namespace Fizyka_smietnik
 
             while (superviseRunning && ssof.Visible)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(100);
                 if (!ssof.Visible)
                 {
                     superviseRunning = false;
@@ -266,7 +266,7 @@ namespace Fizyka_smietnik
                     else if (simulationSeries)
                     {
                         ssof.append("\t" + detector.p.ToString());
-                        ssof.appendLine("\nSimulation series done.", Color.Green);
+                        ssof.append("\nSimulation series done.", Color.Green);
                         simulationSeries = false;
                        
                         Thread.Sleep(5000);
@@ -310,6 +310,13 @@ namespace Fizyka_smietnik
 
         private void nextSimulationStep()
         {
+            if (physicsThread != null)
+            {
+                physicsThread.Abort();
+            }
+            physicsThread = new Thread(physics);
+            physicsThread.Start();
+
             //resetowanie liczników
             fps = 0;
             tps = 0;
@@ -335,13 +342,8 @@ namespace Fizyka_smietnik
             }
         }
 
-        private void createSeriesOfSimulation(int N, int MVel, int R, int G, int L, int H, int h, int lambda, int M, int delay, char simulatedVariable, int[] simulatedVariableValues, int numberOfOutValues)
+        private void createSeriesOfSimulation(int N, int MVel, int R, int G, int L, int H, int h, int lambda, double M, double delay, char simulatedVariable, int[] simulatedVariableValues, int numberOfOutValues)
         {
-            simulationSeries = true;
-            button1.Enabled = false;
-            button2.Enabled = false;
-            button4.Enabled = false;
-
             //tworzenie kroków
             this.simulatedVariable = simulatedVariable;
             this.simulatedVariableValues = simulatedVariableValues;
@@ -350,6 +352,11 @@ namespace Fizyka_smietnik
 
             createSimulation(N, MVel, R, G, L, H, h, lambda, M, delay);
 
+            //rozpoczynanie symulacji
+            simulationSeries = true;
+            button1.Enabled = false;
+            button2.Enabled = false;
+            button4.Enabled = false;
             ssof.Visible = true;
             superviseRunning = true;
             superviseThread = new Thread(supervise);
@@ -357,7 +364,7 @@ namespace Fizyka_smietnik
         }
 
         //tworzenie symulacji - serie symulacji
-        private void createSimulation(int N, int MVel, int R, int G, int L, int H, int h, int lambda, int M, int delay)
+        private void createSimulation(int N, int MVel, int R, int G, int L, int H, int h, int lambda, double M, double delay)
         {
             //przerywanie poprzedniej symulacji
             if (physicsThread != null)
@@ -377,6 +384,7 @@ namespace Fizyka_smietnik
             this.nl = L;
             this.nh = H;
             this.M = M;
+            this.delay = delay;
 
             //ustalanie rozmiaru
             this.AutoSize = false;
@@ -525,8 +533,6 @@ namespace Fizyka_smietnik
             ssif.ShowDialog();
             if (ssif.runSS)
             {
-                
-
                 createSeriesOfSimulation(
                     Convert.ToInt32(numericUpDown1.Value), //N
                     Convert.ToInt32(numericUpDown2.Value), //MVel
@@ -536,8 +542,8 @@ namespace Fizyka_smietnik
                     Convert.ToInt32(numericUpDown4.Value), //H
                     Convert.ToInt32(numericUpDown5.Value), //h
                     Convert.ToInt32(numericUpDown6.Value), //lambda
-                    25000, //M
-                    500, //delay
+                    Convert.ToDouble(numericUpDown9.Value), //M
+                    Convert.ToDouble(numericUpDown10.Value), //delay
                     ssif.simulatedVariable, //simulatedVariable
                     ssif.simulatedVariableValues, //simulatedVariableValues
                     ssif.numberOfOutValues //numberOfOutValues
