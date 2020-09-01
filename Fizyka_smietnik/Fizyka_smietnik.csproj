@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{6FDEA48E-403E-4532-9E81-8A704F6CDD58}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>Fizyka_smietnik</RootNamespace>
-    <AssemblyName>Fizyka_smietnik</AssemblyName>
+    <RootNamespace>Fizyka_Czasteczki</RootNamespace>
+    <AssemblyName>Fizyka_Czasteczki</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>

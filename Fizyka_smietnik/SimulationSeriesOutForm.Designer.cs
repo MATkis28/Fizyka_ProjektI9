@@ -1,4 +1,4 @@
-﻿namespace Fizyka_smietnik
+﻿namespace Fizyka_Czasteczki
 {
     partial class SimulationSeriesOutForm
     {

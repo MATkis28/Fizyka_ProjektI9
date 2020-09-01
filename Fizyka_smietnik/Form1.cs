@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Fizyka_smietnik
+namespace Fizyka_Czasteczki
 {
     public partial class Form1 : Form
     {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Fizyka_smietnik
+namespace Fizyka_Czasteczki
 {
     static class Program
     {
