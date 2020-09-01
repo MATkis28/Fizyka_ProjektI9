@@ -56,8 +56,9 @@ namespace Fizyka_Czasteczki
         //okno
         private Size defaultFormSize;
         private Size box = new Size(574, 384);
-        private Font drawFont = new Font("Arial", 8);
-        private SolidBrush blackBrush = new SolidBrush(Color.Black);
+        //pens
+        Pen redPen = new Pen(Color.Red);
+        Pen blackPen = new Pen(Color.Black);
 
         public Form1()
         {
@@ -67,9 +68,8 @@ namespace Fizyka_Czasteczki
 
         private void drawDetector(Graphics drawing)
         {
-            Pen borderPen = new Pen(Color.Red);
-            drawing.DrawLine(borderPen, box.Width - 1, (float)detector.end, box.Width - 1, (float)detector.begin);
-            drawing.DrawLine(borderPen, box.Width - 2, (float)detector.end, box.Width - 2, (float)detector.begin);
+            drawing.DrawLine(redPen, box.Width - 1, (float)detector.end, box.Width - 1, (float)detector.begin);
+            drawing.DrawLine(redPen, box.Width - 2, (float)detector.end, box.Width - 2, (float)detector.begin);
             if (textBox1.InvokeRequired)         //interakcja z watkiem glownym w celu pokazania wartosci cisnienia
             {
                 pictureBox1.Invoke(new MethodInvoker(
@@ -84,16 +84,14 @@ namespace Fizyka_Czasteczki
 
         private void drawBorders(Graphics drawing) 
         {
-            Pen borderPen = new Pen(Color.Black);
-            drawing.DrawLine(borderPen, 0, 0, box.Width - 1, 0);
-            drawing.DrawLine(borderPen, 0, box.Height - 1, box.Width - 1, box.Height - 1);
-            drawing.DrawLine(borderPen, 0, 0, 0, box.Height - 1);
-            drawing.DrawLine(borderPen, box.Width - 1, 0, box.Width - 1, box.Height - 1);
+            drawing.DrawLine(blackPen, 0, 0, box.Width - 1, 0);
+            drawing.DrawLine(blackPen, 0, box.Height - 1, box.Width - 1, box.Height - 1);
+            drawing.DrawLine(blackPen, 0, 0, 0, box.Height - 1);
+            drawing.DrawLine(blackPen, box.Width - 1, 0, box.Width - 1, box.Height - 1);
         }
 
         private void drawParticles(Graphics drawing)
         {
-            Pen blackPen = new Pen(Color.Black);
             for (int i = 0; i < particles.Length; i++)
             {
                 if(particles[i] != null)
