@@ -13,7 +13,7 @@ namespace Fizyka_Czasteczki
         Thread physicsThread;
         Thread superviseThread;
         Particle[] particles;
-        Detector detector;// = new Detector(300,500); //TODO: jakoś to trzeba zrobić żeby można było zmieniać te wartosci w UI i może narysowac ten detektor jakos
+        Detector detector;
 
         //symulacja
         private int nh;
@@ -70,7 +70,7 @@ namespace Fizyka_Czasteczki
             Pen borderPen = new Pen(Color.Red);
             drawing.DrawLine(borderPen, box.Width - 1, (float)detector.end, box.Width - 1, (float)detector.begin);
             drawing.DrawLine(borderPen, box.Width - 2, (float)detector.end, box.Width - 2, (float)detector.begin);
-            if (textBox1.InvokeRequired)         //NIE MAM POJECIA DLACZEGO ALE MUSIALEM TO W TEN SPOSOB ZROBIC
+            if (textBox1.InvokeRequired)         //interakcja z watkiem glownym w celu pokazania wartosci cisnienia
             {
                 pictureBox1.Invoke(new MethodInvoker(
                      delegate ()
@@ -82,7 +82,7 @@ namespace Fizyka_Czasteczki
                 textBox1.Text = detector.p.ToString();
         }
 
-        private void drawBorders(Graphics drawing)
+        private void drawBorders(Graphics drawing) 
         {
             Pen borderPen = new Pen(Color.Black);
             drawing.DrawLine(borderPen, 0, 0, box.Width - 1, 0);
@@ -93,24 +93,20 @@ namespace Fizyka_Czasteczki
 
         private void drawParticles(Graphics drawing)
         {
-            //SolidBrush particleBrush = new SolidBrush(Color.Black);
             Pen blackPen = new Pen(Color.Black);
             for (int i = 0; i < particles.Length; i++)
             {
-                //particleBrush.Color = particles[i].color;
-                //drawing.FillEllipse(particleBrush, (float)((particles[i].X - particles[i].Radius) / 1), (float)((particles[i].Y - particles[i].Radius) / 1), 2 * particles[i].Radius, 2 * particles[i].Radius);
                 if(particles[i] != null)
                     drawing.DrawEllipse(blackPen, (float)(particles[i].X - particles[i].Radius), (float)(particles[i].Y - particles[i].Radius), 2 * particles[i].Radius, 2 * particles[i].Radius);
-                blackPen.Color = Color.Black;
             }
         }
 
-        private void drawFrame(Graphics drawing ,Bitmap bmg)
+        private void drawFrame(Graphics drawing ,Bitmap bmg) // render klatki 
         {
             Rectangle box = new Rectangle(0, 0, bmg.Width, bmg.Height);
             if (drawingRunning)
             {
-                if (pictureBox1.InvokeRequired)         //NIE MAM POJECIA DLACZEGO ALE MUSIALEM TO W TEN SPOSOB ZROBIC
+                if (pictureBox1.InvokeRequired)         //interakcja z watkiem glownym w celu zaaktualizowania obiektu pictureBox1
                 {
                     pictureBox1.Invoke(new MethodInvoker(
                          delegate ()
@@ -128,7 +124,7 @@ namespace Fizyka_Czasteczki
 
         private void updateFPS(Graphics drawing)
         {
-            label6.Invoke(new MethodInvoker(
+            label6.Invoke(new MethodInvoker(    // interakcja z glownym watkiem w celu zaaktualizowania informacji na temat symulacji
                 delegate ()
                 {
                     label6.Text = "FPS: " + fps.ToString() + "\nTPS: " + tps.ToString() + " / " + (Stopwatch.Frequency / dt).ToString() + "\nSpeed: " + (tps/1.0 / Stopwatch.Frequency * dt).ToString() + "X" + "\nSimulation time: " + (1000 * ticksCount * dt / Stopwatch.Frequency).ToString() + "ms \nTicks: " + ticksCount.ToString() + "\nSkipped ticks: " + skippedTicksCount.ToString();
@@ -493,69 +489,6 @@ namespace Fizyka_Czasteczki
                     Convert.ToDouble(numericUpDown9.Value), //M
                     Convert.ToDouble(numericUpDown10.Value) //delay
                 );
-
-            /* defaultRadius = Convert.ToInt32(numericUpDown7.Value);
-            AutoSize = false;
-            Size = defaultFormSize;
-            Random rng = new Random(); //UTWORZENIE SEEDA RNG
-            nh = Convert.ToInt32(numericUpDown4.Value); //POBRANIE ROZMAIRU OKNA
-            nl = Convert.ToInt32(numericUpDown3.Value);
-            box.Width = nl * defaultRadius;
-            box.Height = nh * defaultRadius;
-            K = nl; //K = (nl < nh) ? nl : nh; 
-            pictureBox1.Size = box;
-            AutoSize = true;
-            if (physicsThread != null)      //WYLACZENIE POPRZEDNICH SYMULACJI
-            {
-                physicsThread.Abort();
-            }
-            if (drawThread != null)
-            {
-                drawThread.Abort();
-            }
-            ticksCount = 0;
-            skippedTicksCount = 0;
-
-            //UTWORZENIE DETEKTORA
-            double h = Convert.ToInt32(numericUpDown5.Value);
-            double lambda = Convert.ToInt32(numericUpDown6.Value);
-            detector = new Detector(box.Height - (h * defaultRadius) - (lambda * defaultRadius), box.Height - (h * defaultRadius));
-
-            //WCZYTANIE WARTOSCI Z OKNA
-            numberofparticles = Convert.ToInt32(numericUpDown1.Value);
-            if (4 * numberofparticles > nh * nl)
-            {
-                numberofparticles = nh * nl / 4;
-                numericUpDown1.Value = numberofparticles;
-            }
-            maxVel = Convert.ToInt32(numericUpDown2.Value);
-            dt = Stopwatch.Frequency / (K * maxVel);
-            g = Convert.ToInt32(numericUpDown8.Value);
-
-            //UTWORZENIE TABLICY CZASTEK
-            double dts = (double)dt / Stopwatch.Frequency;
-            particles = new Particle[numberofparticles];
-            for (int i = 0; i < numberofparticles; i++)
-                particles[i] = new Particle(defaultRadius, dts, g, box, maxVel, rng);
-
-            //RESETOWANIE LICZNIKÓW
-            fps = 0;
-            tps = 0;
-            ticksCount = 0;
-            skippedTicksCount = 0;
-
-            //UTWORZENIE THREADA DLA RYSOWANIA ORAZ FIZYKI
-            drawingRunning = true;
-            drawThread = new Thread(draw);
-            drawThread.Start();
-
-            physicsRuning = true;
-            physicsPause = true;
-            button2.Text = "Physics Paused";
-            physicsThread = new Thread(physics);
-            physicsThread.Start();
-            physicsRuning = true;
-            System.Threading.Thread.Sleep(1000); */
         }
 
         // pauzowanie fizyki
@@ -751,10 +684,8 @@ namespace Fizyka_Czasteczki
             {
                 double dx = X - secondparticle.X;
                 double dy = Y - secondparticle.Y;
-                if (dy * dy + dx * dx <= (Radius + secondparticle.Radius) * (Radius + secondparticle.Radius) * d) 
-                //if (geometry.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
+                if (dy * dy + dx * dx <= (Radius + secondparticle.Radius) * (Radius + secondparticle.Radius) * d)
                 {
-                    //color = Color.Red;
                     return true;
                 }
             }
@@ -766,7 +697,6 @@ namespace Fizyka_Czasteczki
             double dy = Y - Y2;
             if (dy * dy + dx * dx < (Radius + R2) * (Radius + R2) * d)
                 {                     
-                    //color = Color.Red;
                     return true;
                 }
             return false;
@@ -776,17 +706,6 @@ namespace Fizyka_Czasteczki
             bool touched = false;
             for (int i = currentIndex + 1; i < particles.Length; i++) 
             {
-                /*if (particles[i] != this)
-                 {
-                     double dx = X - particles[i].X;
-                     double dy = Y - particles[i].Y;
-                     if (dy * dy + dx * dx <= (Radius + particles[i].Radius) * (Radius + particles[i].Radius))
-                     //if (geometry.distance(X, Y, secondparticle.X, secondparticle.Y) <= (Radius + secondparticle.Radius))
-                     {
-                         color = Color.Red;
-                         touched = true;
-                     }
-                 }*/
                 if (particlecollision(ref particles[i].X,ref particles[i].Y,ref particles[i].Radius))
                 {
                     touched = true;
@@ -796,13 +715,14 @@ namespace Fizyka_Czasteczki
             }
             if (!touched)
             {
-                //color = Color.Transparent;
                 return false;
             }
             else
+            {
                 return true;
+            }
         }
-        //TODO: wywołac funkcje detekcji
+
         public void bordercollision(Detector detector)
         {
             if (X < Radius && velX < 0)
