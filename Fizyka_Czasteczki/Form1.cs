@@ -827,24 +827,4 @@ namespace Fizyka_Czasteczki
             collidedParticle.velX = Math.Cos(wektor2kat) * wektor2wartosc;
         }
     }
-
-    public class geometry
-    {
-        public static double distance(double x1 ,double y1 ,double x2, double y2)
-        {
-            double dx = x1 - x2;
-            double dy = y1 - y2;
-            if (dx < 0) dx = -dx;
-            if (dy < 0) dy = -dy;
-            return (double)Math.Sqrt((dy * dy + dx * dx));
-        }
-        public static double distance_nosqrt(double x1, double y1, double x2, double y2)
-        {
-            double dx = x1 - x2;
-            double dy = y1 - y2;
-            if (dx < 0) dx = -dx;
-            if (dy < 0) dy = -dy;
-            return (dy * dy + dx * dx);
-        }
-    }
 }
