@@ -590,6 +590,14 @@ namespace Fizyka_Czasteczki
                     numericUpDown5.Value = numericUpDown4.Value - numericUpDown6.Value;
             }
         }
+
+        private void changedmaxV(object sender, EventArgs e)
+        {
+            if(numericUpDown2.Value <= 0)
+            {
+                numericUpDown2.Value = 1;
+            }
+        }
     }
 
     public class Detector
